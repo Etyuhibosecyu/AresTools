@@ -1,0 +1,888 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+						 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+						 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+						 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+						 xmlns:spaced="clr-namespace:SpacedGridControl.Avalonia"
+						 xmlns:local="clr-namespace:AresTools.Views"
+						 xmlns:vm="clr-namespace:AresTools.ViewModels"
+						 mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="768"
+						 x:Class="AresTools.Views.MainView"
+						 x:DataType="vm:MainViewModel">
+	<Design.DataContext>
+		<!-- This only sets the DataContext for the previewer in an IDE,
+				 to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+		<vm:MainViewModel />
+	</Design.DataContext>
+
+	<UserControl.Resources>
+		<local:OpacityConverter x:Key="OpacityConverter" />
+	</UserControl.Resources>
+
+	<ScrollViewer>
+		<StackPanel
+			Orientation="Vertical"
+			Spacing="8"
+			VerticalAlignment="Center">
+
+			<local:SpacedGrid
+				ColumnSpacing="8"
+				HorizontalAlignment="Stretch"
+				RowSpacing="8">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="40" />
+					<RowDefinition Height="40" />
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+				<TextBlock
+					Text="Supertotal"
+					FontSize="24" />
+				<ContentControl
+					Grid.Column="1"
+					MinHeight="40">
+					<ProgressBar
+						x:Name="ProgressBarSupertotal"
+						Background="#FFBFDF"
+						Maximum="1"
+						MinHeight="40"
+						Value="0.36"
+						Foreground="#BF8080" />
+				</ContentControl>
+				<TextBlock
+					Grid.Row="1"
+					Text="Total"
+					FontSize="24" />
+				<ContentControl
+					Grid.Column="1"
+					Grid.Row="1"
+					MinHeight="40">
+					<ProgressBar
+						x:Name="ProgressBarTotal"
+						Background="#BFBFFF"
+						Maximum="1"
+						MinHeight="40"
+						Value="0.64"
+						Foreground="#8080BF" />
+				</ContentControl>
+			</local:SpacedGrid>
+
+			<local:SpacedGrid
+				x:Name="GridThreadsProgressBars"
+				HorizontalAlignment="Stretch"
+				RowSpacing="8">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+			</local:SpacedGrid>
+
+			<TabControl x:Name="TabView">
+				<TabItem x:Name="TabItemFiles" Header="Произвольные файлы">
+					<StackPanel Orientation="Vertical"
+						x:Name="PanelFiles"
+						HorizontalAlignment="Left">
+						<Grid
+							x:Name="GridCompressionButtonsF">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+							<Button
+								x:Name="ButtonOpenF"
+								Background="#40BF40"
+								Click="ButtonOpenF_Click"
+								Grid.Row="0"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonOpenForCompressionF"
+								Background="#8080BF"
+								Click="ButtonOpenForCompressionF_Click"
+								Grid.Row="1"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть для сжатия"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonOpenForUnpackingF"
+								Background="#BF8040"
+								Click="ButtonOpenForUnpackingF_Click"
+								Grid.Row="2"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть для распаковки"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonOpenForRecompressionF"
+								Background="#A06040"
+								Click="ButtonOpenForRecompressionF_Click"
+								Grid.Column="1"
+								Grid.Row="1"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть для пересжатия"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonStopF"
+								Background="#BF4080"
+								Click="ButtonStop_Click"
+								Grid.Column="2"
+								Grid.Row="2"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Остановить"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+						</Grid>
+						
+						<Grid
+							x:Name="GridSettingsF">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<TextBlock
+								Text="Быстрая настройка: "
+								FontSize="12"
+								VerticalAlignment="Center" />
+							<ComboBox
+								x:Name="ComboQuickSetupF"
+								SelectionChanged="ComboQuickSetupF_SelectionChanged"
+								Grid.Column="1">
+								<ComboBox.Items>
+									<x:String>Start</x:String>
+									<x:String>Optimus</x:String>
+									<x:String>Pro</x:String>
+									<x:String>Pro+</x:String>
+									<x:String>Unlim</x:String>
+								</ComboBox.Items>
+								<ComboBox.SelectedIndex>1</ComboBox.SelectedIndex>
+							</ComboBox>
+						</Grid>
+
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+							<CheckBox
+								x:Name="CheckBoxCS1F"
+								IsCheckedChanged="CheckBoxCS1F_CheckedChanged"
+								IsChecked="True">
+								<TextBlock
+									Text="C-S1" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS1F}">
+								<CheckBox
+									x:Name="CheckBoxLZ1F"
+									IsCheckedChanged="CheckBoxLZ1F_CheckedChanged"
+									ToolTip.Tip="Лемпель-Зив (LZ) - алгоритм словарного сжатия, кодирующий повторяющиеся группы бит (LZMA), символов или слов. На самом деле Лемпель и Зив - две разные фамилии. В сочетании с Хаффманом является классикой в деле сжатия данных."
+									IsChecked="True">
+									<TextBlock
+										Text="LZ" />
+								</CheckBox>
+								<CheckBox
+									x:Name="CheckBoxHF1F"
+									IsCheckedChanged="CheckBoxHF1F_CheckedChanged"
+									ToolTip.Tip='Хаффман (Huff, HF) - алгоритм энтропийного сжатия, кодирующий частые элементы короткими кодами, а редкие - длинными. Для HF без специальных обозначений "элементами" являются байты, благодаря чему он быстрый и универсальный, и вместе с Лемпелем-Зивом является классикой в деле сжатия данных, но сжимает часто хуже, чем более специфические алгоритмы.'
+									IsChecked="True">
+									<TextBlock
+										Text="HF" />
+								</CheckBox>
+							</StackPanel>
+							<CheckBox
+								x:Name="CheckBoxCS2F"
+								IsCheckedChanged="CheckBoxCS2F_CheckedChanged"
+								Grid.Column="2">
+								<TextBlock
+									Text="C-S2" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Column="2"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS2F}">
+								<TextBlock
+									ToolTip.Tip='Преобразование Барроуза-Уилера (BWT) - это алгоритм, который не только не сжимает, а даже слегка "раздувает" входной поток, да еще и "перетрясает" все его байты в непредсказуемом порядке, но, как ни парадоксально, если результат сжать Хаффманом, можно добиться намного лучшей степени сжатия, чем если применять Хаффман к результату сжатия Лемпелем-Зивом (теоретически).'
+									Text="  ✓     BWT" />
+								<TextBlock
+									ToolTip.Tip='Хаффман (Huff, HF) - алгоритм энтропийного сжатия, кодирующий частые элементы короткими кодами, а редкие - длинными. Для HF без специальных обозначений "элементами" являются байты, благодаря чему он быстрый и универсальный, и вместе с Лемпелем-Зивом является классикой в деле сжатия данных, но сжимает часто хуже, чем более специфические алгоритмы.'
+									Text="  ✓     HF" />
+								<CheckBox
+									x:Name="CheckBoxAHF2F"
+									IsCheckedChanged="CheckBoxAHF2F_CheckedChanged"
+										ToolTip.Tip="Адаптивный Хаффман (AHF) - алгоритм энтропийного сжатия, похожий на Хаффман (HF), но способный динамически добавлять элементы в кодовую таблицу, начиная с первого, и учитывать их вероятность в текущем контексте, а не во всем файле. В результате этого сжатый текст (AB)¹⁰⁰⁰(CD)¹⁰⁰⁰(EF)¹⁰⁰⁰(GH)¹⁰⁰⁰ (показатель степени обозначает количество повторов) займет намного меньше, чем (8000 * log₂8) бит.">
+									<TextBlock
+											Text="AHF" />
+								</CheckBox>
+							</StackPanel>
+							<CheckBox
+								x:Name="CheckBoxCS3F"
+								IsCheckedChanged="CheckBoxCS3F_CheckedChanged"
+								Grid.Column="4">
+								<TextBlock
+									Text="C-S3" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Column="4"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS3F}">
+								<TextBlock
+									Background="#80BFFF"
+									ToolTip.Tip='LZMA - разновидность Лемпеля-Зива (LZ), применяемая к битам. Одно это уже делает алгоритм в корне отличающимся от "классического" Лемпеля-Зива и по степени сжатия, и по скорости, и по собственно алгоритму. Одно только название осталось от LZ...'
+									Text="  ✓     LZMA" />
+							</StackPanel>
+							<CheckBox
+								x:Name="CheckBoxCS4F"
+								IsCheckedChanged="CheckBoxCS4F_CheckedChanged"
+								Grid.Column="5">
+								<TextBlock
+									Text="C-S4" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Column="5"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS4F}">
+								<TextBlock
+									ToolTip.Tip='Предсказание по частичному совпадению (PPM) - алгоритм сжатия текста, обеспечивающий экстремальные степени сжатия, но потребляющий огромное количество (до нескольких тысяч раз от размера файла) оперативной памяти. Суть его заключается в особом энтропийном кодировании, кодирующем не только одиночные элементы, но и их сочетания. Например, Хаффман закодирует английское сочетание "qu" как отдельно "q" и отдельно "u", вероятность встретить которую примерно средняя среди всех букв - например, меньше, чем у "a" - а PPM закодирует эту "u" именно как следующую за "q", где ее вероятность примерно 99.9% (а мы знаем, что чем более вероятный какой-либо элемент, тем короче его энтропийный код).'
+									Text="  ✓     PPM" />
+							</StackPanel>
+							<CheckBox
+								x:Name="CheckBoxCS5F"
+								IsCheckedChanged="CheckBoxCS5F_CheckedChanged"
+								Grid.Column="7">
+								<TextBlock
+									Text="C-S5" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Column="7"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS5F}">
+								<TextBlock
+									Background="#80BFFF"
+									ToolTip.Tip='PPM для бит (PPMB) - поражающий воображение алгоритм сжатия - работает с произвольными данными, сжимает так, что все другие и рядом не стояли, практически моментально восстанавливается после "встряски" резкой сменой типа контента... если вы готовы к скорости меньше 1 МБ/ч и затратам RAM x5000 от размера файла (для сжатия 8 МБ ее потребуется 40 ГБ)!'
+									Text="  ✓     PPMB" />
+							</StackPanel>
+						</Grid>
+						<StackPanel
+							Orientation="Horizontal">
+							<TextBlock
+								Text="Размер фрагмента (млн.): " />
+							<ComboBox
+								x:Name="ComboFragmentLengthF"
+								SelectionChanged="ComboFragmentLengthF_SelectionChanged">
+								<ComboBox.Items>
+									<x:String>1</x:String>
+									<x:String>2</x:String>
+									<x:String>4</x:String>
+									<x:String>8</x:String>
+									<x:String>16</x:String>
+									<x:String>32</x:String>
+									<x:String>64</x:String>
+									<x:String>128</x:String>
+									<x:String>256</x:String>
+									<x:String>512</x:String>
+									<x:String>1024</x:String>
+									<x:String>2048</x:String>
+								</ComboBox.Items>
+								<ComboBox.SelectedIndex>4</ComboBox.SelectedIndex>
+							</ComboBox>
+						</StackPanel>
+					</StackPanel>
+				</TabItem>
+				<TabItem x:Name="TabItemImages" Header="Изображения">
+					<StackPanel Orientation="Vertical"
+						x:Name="PanelImages"
+						HorizontalAlignment="Left">
+						<Grid
+							x:Name="GridCompressionButtonsI">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+							<Button
+								x:Name="ButtonOpenI"
+								Background="#40BF40"
+								Click="ButtonOpenI_Click"
+								Grid.Row="0"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonOpenForCompressionI"
+								Background="#8080BF"
+								Click="ButtonOpenForCompressionI_Click"
+								Grid.Row="1"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть для сжатия"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonOpenForUnpackingI"
+								Background="#BF8040"
+								Click="ButtonOpenForUnpackingI_Click"
+								Grid.Row="2"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть для распаковки"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonOpenForRecompressionI"
+								Background="#A06040"
+								Click="ButtonOpenForRecompressionI_Click"
+								Grid.Column="1"
+								Grid.Row="1"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть для пересжатия"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonStopI"
+								Background="#BF4080"
+								Click="ButtonStop_Click"
+								Grid.Column="2"
+								Grid.Row="2"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Остановить"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+						</Grid>
+
+						<Grid
+							x:Name="GridSettings">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<TextBlock
+								Text="Быстрая настройка: "
+								FontSize="12"
+								VerticalAlignment="Center" />
+							<ComboBox
+								x:Name="ComboQuickSetupI"
+								SelectionChanged="ComboQuickSetupI_SelectionChanged"
+								Grid.Column="1">
+								<ComboBox.Items>
+									<x:String>Start</x:String>
+									<x:String>Optimus</x:String>
+									<x:String>Pro</x:String>
+									<x:String>Pro+</x:String>
+									<x:String>Unlim</x:String>
+								</ComboBox.Items>
+								<ComboBox.SelectedIndex>1</ComboBox.SelectedIndex>
+							</ComboBox>
+						</Grid>
+
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+							<CheckBox
+								x:Name="CheckBoxCS1I"
+								IsCheckedChanged="CheckBoxCS1I_CheckedChanged"
+								IsChecked="False">
+								<TextBlock
+									Text="C-S1" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS1I}">
+								<CheckBox
+									x:Name="CheckBoxHF1I"
+									IsCheckedChanged="CheckBoxHF1I_CheckedChanged"
+									ToolTip.Tip='Хаффман (Huff, HF) - алгоритм энтропийного сжатия, кодирующий частые элементы короткими кодами, а редкие - длинными. Для HF без специальных обозначений "элементами" являются байты, благодаря чему он быстрый и универсальный, и вместе с Лемпелем-Зивом является классикой в деле сжатия данных, но сжимает часто хуже, чем более специфические алгоритмы.'
+									IsChecked="True">
+									<TextBlock
+										Text="HF" />
+								</CheckBox>
+								<CheckBox
+									x:Name="CheckBoxLZ1I"
+									IsCheckedChanged="CheckBoxLZ1I_CheckedChanged"
+									ToolTip.Tip="Лемпель-Зив (LZ) - алгоритм словарного сжатия, кодирующий повторяющиеся группы бит (LZMA), символов или слов. На самом деле Лемпель и Зив - две разные фамилии. В сочетании с Хаффманом является классикой в деле сжатия данных."
+									IsChecked="True">
+									<TextBlock
+										Text="LZ" />
+								</CheckBox>
+							</StackPanel>
+							<CheckBox
+								x:Name="CheckBoxCS2I"
+								IsCheckedChanged="CheckBoxCS2I_CheckedChanged"
+								Grid.Column="1"
+								IsChecked="True">
+								<TextBlock
+									Text="C-S2" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Column="1"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS2I}">
+								<TextBlock
+									ToolTip.Tip="Дельта (Δ) - алгоритм предварительной обработки, при котором каждый элемент вЫходного потока номер i, начиная со второго, равен разности между элементами входного потока номер i и (i - 1)."
+									Text="  ✓     Δ" />
+								<CheckBox
+									x:Name="CheckBoxHF2I"
+									IsCheckedChanged="CheckBoxHF2I_CheckedChanged"
+									ToolTip.Tip='Хаффман (Huff, HF) - алгоритм энтропийного сжатия, кодирующий частые элементы короткими кодами, а редкие - длинными. Для HF без специальных обозначений "элементами" являются байты, благодаря чему он быстрый и универсальный, и вместе с Лемпелем-Зивом является классикой в деле сжатия данных, но сжимает часто хуже, чем более специфические алгоритмы.'
+									IsChecked="True">
+									<TextBlock
+										Text="HF" />
+								</CheckBox>
+								<CheckBox
+									x:Name="CheckBoxLZ2I"
+									IsCheckedChanged="CheckBoxLZ2I_CheckedChanged"
+									ToolTip.Tip="Лемпель-Зив (LZ) - алгоритм словарного сжатия, кодирующий повторяющиеся группы бит (LZMA), символов или слов. На самом деле Лемпель и Зив - две разные фамилии. В сочетании с Хаффманом является классикой в деле сжатия данных."
+									IsChecked="True">
+									<TextBlock
+										Text="LZ" />
+								</CheckBox>
+							</StackPanel>
+							<CheckBox
+								x:Name="CheckBoxCS3I"
+								IsCheckedChanged="CheckBoxCS3I_CheckedChanged"
+								Grid.Column="2"
+								IsChecked="False">
+								<TextBlock
+									Text="C-S3" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Column="2"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS3I}">
+								<TextBlock
+									ToolTip.Tip='Преобразование Барроуза-Уилера (BWT) - это алгоритм, который не только не сжимает, а даже слегка "раздувает" входной поток, да еще и "перетрясает" все его байты в непредсказуемом порядке, но, как ни парадоксально, если результат сжать Хаффманом, можно добиться намного лучшей степени сжатия, чем если применять Хаффман к результату сжатия Лемпелем-Зивом (теоретически).'
+									Text="  ✓     BWT" />
+								<TextBlock
+									ToolTip.Tip='Хаффман (Huff, HF) - алгоритм энтропийного сжатия, кодирующий частые элементы короткими кодами, а редкие - длинными. Для HF без специальных обозначений "элементами" являются байты, благодаря чему он быстрый и универсальный, и вместе с Лемпелем-Зивом является классикой в деле сжатия данных, но сжимает часто хуже, чем более специфические алгоритмы.'
+									Text="  ✓     HF" />
+							</StackPanel>
+							<CheckBox
+								x:Name="CheckBoxCS4I"
+								IsCheckedChanged="CheckBoxCS4I_CheckedChanged"
+								Grid.Column="3"
+								IsChecked="False">
+								<TextBlock
+									Text="C-S4" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Column="3"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS4I}">
+								<TextBlock
+									ToolTip.Tip='Дельта (Δ) - алгоритм предварительной обработки, при котором каждый элемент вЫходного потока номер i, начиная со второго, равен разности между элементами входного потока номер i и (i - 1).'
+									Text="  ✓     Δ" />
+								<TextBlock
+									ToolTip.Tip='Преобразование Барроуза-Уилера (BWT) - это алгоритм, который не только не сжимает, а даже слегка "раздувает" входной поток, да еще и "перетрясает" все его байты в непредсказуемом порядке, но, как ни парадоксально, если результат сжать Хаффманом, можно добиться намного лучшей степени сжатия, чем если применять Хаффман к результату сжатия Лемпелем-Зивом (теоретически).'
+									Text="  ✓     BWT" />
+								<TextBlock
+									ToolTip.Tip='Хаффман (Huff, HF) - алгоритм энтропийного сжатия, кодирующий частые элементы короткими кодами, а редкие - длинными. Для HF без специальных обозначений "элементами" являются байты, благодаря чему он быстрый и универсальный, и вместе с Лемпелем-Зивом является классикой в деле сжатия данных, но сжимает часто хуже, чем более специфические алгоритмы.'
+									Text="  ✓     HF" />
+							</StackPanel>
+							<CheckBox
+								x:Name="CheckBoxCS5I"
+								IsCheckedChanged="CheckBoxCS5I_CheckedChanged"
+								Grid.Column="4"
+								IsChecked="False">
+								<TextBlock
+									Text="C-S5" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Column="4"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS5I}">
+								<TextBlock
+									Background="#80BFFF"
+									ToolTip.Tip="Самый загадочный алгоритм сжатия изображений, что он делает - никому не известно. Может сжать лучше всех прочих. А может раздуть. А может быть, он все еще в разработке... На всякий случай, если у вас пожар не горит, пытайтесь сжать как веткой с этим алгоритмом, так и веткой без него."
+									Text="  ✓     ???" />
+								<TextBlock
+									Background="#80BFFF"
+									ToolTip.Tip='YUV - цветовое пространство, отличное от RGB, в котором те же цвета пикселов будут представлены другими числами, а также алгоритм перевода в это цветовое пространство. Сам по себе не сжимает и не раздувает изображение, но в редких случаях улучшает сжатие Хаффманом и Лемпелем-Зивом.'
+									Text="  ✓     YUV" />
+								<CheckBox
+									x:Name="CheckBoxHF5I"
+									IsCheckedChanged="CheckBoxHF5I_CheckedChanged"
+									ToolTip.Tip='Хаффман (Huff, HF) - алгоритм энтропийного сжатия, кодирующий частые элементы короткими кодами, а редкие - длинными. Для HF без специальных обозначений "элементами" являются байты, благодаря чему он быстрый и универсальный, и вместе с Лемпелем-Зивом является классикой в деле сжатия данных, но сжимает часто хуже, чем более специфические алгоритмы.'
+									IsChecked="True">
+									<TextBlock
+										Text="HF" />
+								</CheckBox>
+								<CheckBox
+									x:Name="CheckBoxLZ5I"
+									IsCheckedChanged="CheckBoxLZ5I_CheckedChanged"
+									ToolTip.Tip="Лемпель-Зив (LZ) - алгоритм словарного сжатия, кодирующий повторяющиеся группы бит (LZMA), символов или слов. На самом деле Лемпель и Зив - две разные фамилии. В сочетании с Хаффманом является классикой в деле сжатия данных."
+									IsChecked="True">
+									<TextBlock
+										Text="LZ" />
+								</CheckBox>
+							</StackPanel>
+							<CheckBox
+								x:Name="CheckBoxCS6I"
+								IsCheckedChanged="CheckBoxCS6I_CheckedChanged"
+								Grid.Column="5"
+								IsChecked="False">
+								<TextBlock
+									Text="C-S6" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Column="5"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS6I}">
+								<TextBlock
+									Background="#80BFFF"
+									ToolTip.Tip='LW - разновидность рекурсивного (волнового) алгоритма, который использует ту особенность "реальных" фотографий, что на них близкие по расположению пикселы чаще всего близки и по цвету, и перегруппировывает эти пикселы так, чтобы получить отдельно средний цвет, отдельно - разность.'
+									Text="  ✓     LW" />
+								<CheckBox
+									x:Name="CheckBoxLZ6I"
+									IsCheckedChanged="CheckBoxLZ6I_CheckedChanged"
+									ToolTip.Tip="Лемпель-Зив (LZ) - алгоритм словарного сжатия, кодирующий повторяющиеся группы бит (LZMA), символов или слов. На самом деле Лемпель и Зив - две разные фамилии. В сочетании с Хаффманом является классикой в деле сжатия данных."
+									IsChecked="True">
+									<TextBlock
+										Text="LZ" />
+								</CheckBox>
+							</StackPanel>
+							<StackPanel
+								Orientation="Vertical"
+								x:Name="PanelHFType"
+								Grid.Column="8"
+								Grid.Row="0"
+								Grid.RowSpan="2">
+								<RadioButton
+									x:Name="RadioButtonSHFI"
+									ToolTip.Tip='Хаффман (Huff, HF) - алгоритм энтропийного сжатия, кодирующий частые элементы короткими кодами, а редкие - длинными. Для HF без специальных обозначений "элементами" являются байты, благодаря чему он быстрый и универсальный, и вместе с Лемпелем-Зивом является классикой в деле сжатия данных, но сжимает часто хуже, чем более специфические алгоритмы.'
+									IsChecked="False"
+									GroupName="HuffmanTypeI">
+									<TextBlock
+										Text="SHF" />
+								</RadioButton>
+								<RadioButton
+									x:Name="RadioButtonAHFI"
+									Checked="RadioButtonAHFI_CheckedChanged"
+									ToolTip.Tip="Адаптивный Хаффман (AHF) - алгоритм энтропийного сжатия, похожий на Хаффман (HF), но способный динамически добавлять элементы в кодовую таблицу, начиная с первого, и учитывать их вероятность в текущем контексте, а не во всем файле. В результате этого сжатый текст (AB)¹⁰⁰⁰(CD)¹⁰⁰⁰(EF)¹⁰⁰⁰(GH)¹⁰⁰⁰ (показатель степени обозначает количество повторов) займет намного меньше, чем (8000 * log₂8) бит."
+									IsChecked="True"
+									GroupName="HuffmanTypeI">
+									<TextBlock
+										Text="AHF" />
+								</RadioButton>
+							</StackPanel>
+						</Grid>
+					</StackPanel>
+				</TabItem>
+				<TabItem x:Name="TabItemText" Header="Текст">
+					<StackPanel Orientation="Vertical"
+						x:Name="PanelText"
+						HorizontalAlignment="Left">
+						<Grid
+							x:Name="GridCompressionButtonsT">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+							<Button
+								x:Name="ButtonOpenT"
+								Background="#40BF40"
+								Click="ButtonOpenT_Click"
+								Grid.Row="0"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonOpenForCompressionT"
+								Background="#8080BF"
+								Click="ButtonOpenForCompressionT_Click"
+								Grid.Row="1"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть для сжатия"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonOpenForUnpackingT"
+								Background="#BF8040"
+								Click="ButtonOpenForUnpackingT_Click"
+								Grid.Row="2"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть для распаковки"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonOpenForRecompressionT"
+								Background="#A06040"
+								Click="ButtonOpenForRecompressionT_Click"
+								Grid.Column="1"
+								Grid.Row="1"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть для пересжатия"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonStopT"
+								Background="#BF4080"
+								Click="ButtonStop_Click"
+								Grid.Column="2"
+								Grid.Row="2"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Остановить"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+						</Grid>
+						
+						<Grid
+							x:Name="GridSettingsT">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<TextBlock
+								Text="Быстрая настройка: "
+								FontSize="12"
+								VerticalAlignment="Center" />
+							<ComboBox
+								x:Name="ComboQuickSetupT"
+								SelectionChanged="ComboQuickSetupT_SelectionChanged"
+								Grid.Column="1">
+								<ComboBox.Items>
+									<x:String>Start</x:String>
+									<x:String>Optimus</x:String>
+									<x:String>Pro</x:String>
+									<x:String>Pro+</x:String>
+									<x:String>Unlim</x:String>
+								</ComboBox.Items>
+								<ComboBox.SelectedIndex>1</ComboBox.SelectedIndex>
+							</ComboBox>
+						</Grid>
+
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+							<CheckBox
+								x:Name="CheckBoxCS1T"
+								IsCheckedChanged="CheckBoxCS1T_CheckedChanged"
+								Grid.Column="1"
+								IsChecked="True">
+								<TextBlock
+									Text="C-S1" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Column="1"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS1T}">
+								<TextBlock
+									ToolTip.Tip="Хаффман для слов (HFW) - историческое название алгоритма энтропийного сжатия, сжимающего слова на естественном (русском, английском) языке. Историческим оно является потому, что 1 - это не Хаффман, а арифметическое кодирование, и 2 - оно ничем не отличается от такого же для байт, а собственно слова кодирует совсем другая функция, и между ними можно вставить что-то еще, например, Лемпель-Зив."
+									Text="  ✓     HFW" />
+								<CheckBox
+									x:Name="CheckBoxLZ1T"
+									IsCheckedChanged="CheckBoxLZ1T_CheckedChanged"
+									ToolTip.Tip="Лемпель-Зив (LZ) - алгоритм словарного сжатия, кодирующий повторяющиеся группы бит (LZMA), символов или слов. На самом деле Лемпель и Зив - две разные фамилии. В сочетании с Хаффманом является классикой в деле сжатия данных."
+									IsChecked="True">
+									<TextBlock
+										Text="LZ" />
+								</CheckBox>
+								<CheckBox
+									x:Name="CheckBoxCOMB1T"
+									IsCheckedChanged="CheckBoxCOMB1T_CheckedChanged"
+									ToolTip.Tip="Комбинирование слов (CombineWords, COMB) - это метод сокращения количества слов в тексте, использующий тот факт, что алгоритм распаковки слов формален, и ему совершенно безразлично, работать с настоящими словами естественного языка или с чем угодно другим. Поэтому COMB объединяет группы из двух или трех часто используемых слов в одно мнимое слово, что может увеличить степень сжатия.">
+									<TextBlock
+										Text="COMB" />
+								</CheckBox>
+							</StackPanel>
+							<CheckBox
+								x:Name="CheckBoxCS2T"
+								IsCheckedChanged="CheckBoxCS2T_CheckedChanged"
+								Grid.Column="3">
+								<TextBlock
+									Text="C-S2" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Column="3"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS2T}">
+								<TextBlock
+									ToolTip.Tip="Хаффман для слов (HFW) - историческое название алгоритма энтропийного сжатия, сжимающего слова на естественном (русском, английском) языке. Историческим оно является потому, что 1 - это не Хаффман, а арифметическое кодирование, и 2 - оно ничем не отличается от такого же для байт, а собственно слова кодирует совсем другая функция, и между ними можно вставить что-то еще, например, Лемпель-Зив."
+									Text="  ✓     HFW" />
+								<TextBlock
+									ToolTip.Tip='Преобразование Барроуза-Уилера (BWT) - это алгоритм, который не только не сжимает, а даже слегка "раздувает" входной поток, да еще и "перетрясает" все его байты в непредсказуемом порядке, но, как ни парадоксально, если результат сжать Хаффманом, можно добиться намного лучшей степени сжатия, чем если применять Хаффман к результату сжатия Лемпелем-Зивом (теоретически).'
+									Text="  ✓     BWT" />
+								<CheckBox
+									x:Name="CheckBoxLZ2T"
+									IsCheckedChanged="CheckBoxLZ2T_CheckedChanged"
+									ToolTip.Tip='Лемпель-Зив (LZ) - алгоритм словарного сжатия, кодирующий повторяющиеся группы бит (LZMA), символов или слов. На самом деле Лемпель и Зив - две разные фамилии. В сочетании с Хаффманом является классикой в деле сжатия данных. В данном случае Лемпель-Зив применяется к ссылкам на слова, у которых "алфавит" намного больше, чем у байта, и BWT к ним неприменим.'>
+									<TextBlock
+										Text="LZ" />
+								</CheckBox>
+							</StackPanel>
+							<CheckBox
+								x:Name="CheckBoxCS3T"
+								IsCheckedChanged="CheckBoxCS3T_CheckedChanged"
+								Grid.Column="6">
+								<TextBlock
+									Text="C-S3" />
+							</CheckBox>
+							<StackPanel
+								Orientation="Vertical"
+								Grid.Column="6"
+								Grid.Row="1"
+								IsEnabled="{Binding IsChecked, ElementName=CheckBoxCS3T}">
+								<TextBlock
+									ToolTip.Tip="PPM для слов (PPMW) - самый эффективный алгоритм сжатия текста из всех. Разбивает на слова, а потом сжимает методом предсказания по частичному совпадению (PPM). Ни один осмысленный текст на естественном языке не устоит перед его натиском!"
+									Text="  ✓     PPMW" />
+							</StackPanel>
+						</Grid>
+						<StackPanel
+							Orientation="Horizontal">
+							<TextBlock
+								Text="Размер фрагмента (млн.): " />
+							<ComboBox
+								x:Name="ComboFragmentLengthT"
+								SelectionChanged="ComboFragmentLengthT_SelectionChanged">
+								<ComboBox.Items>
+									<x:String>1</x:String>
+									<x:String>2</x:String>
+									<x:String>4</x:String>
+									<x:String>8</x:String>
+									<x:String>16</x:String>
+									<x:String>32</x:String>
+									<x:String>64</x:String>
+									<x:String>128</x:String>
+									<x:String>256</x:String>
+									<x:String>512</x:String>
+									<x:String>1024</x:String>
+									<x:String>2048</x:String>
+								</ComboBox.Items>
+								<ComboBox.SelectedIndex>4</ComboBox.SelectedIndex>
+							</ComboBox>
+						</StackPanel>
+					</StackPanel>
+				</TabItem>
+				<TabItem x:Name="TabItemArchiving" Header="Архивация">
+					<Image
+						HorizontalAlignment="Left"
+						Source="avares://AresTools/Assets/under_development.png"
+						Width="256" />
+				</TabItem>
+			</TabControl>
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>
