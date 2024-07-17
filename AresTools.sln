@@ -35,6 +35,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresToolsExecutor", "AresTo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresToolsTests", "AresToolsTests\AresToolsTests.csproj", "{EB54F48A-7DEF-45D1-AF44-9F131171C3D3}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresVLib", "..\AresV\AresVLib\AresVLib.csproj", "{747B13C1-29C4-4523-898B-6004417C8B5B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryMediaAPI", "..\AresV\CryMediaAPI\CryMediaAPI.csproj", "{A03487F2-E39B-4D54-85BA-FBF81C98A54A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{FF13F247-BE51-43D8-9A7A-1F4D90279108}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +116,14 @@ Global
 		{EB54F48A-7DEF-45D1-AF44-9F131171C3D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB54F48A-7DEF-45D1-AF44-9F131171C3D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB54F48A-7DEF-45D1-AF44-9F131171C3D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{747B13C1-29C4-4523-898B-6004417C8B5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{747B13C1-29C4-4523-898B-6004417C8B5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{747B13C1-29C4-4523-898B-6004417C8B5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{747B13C1-29C4-4523-898B-6004417C8B5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A03487F2-E39B-4D54-85BA-FBF81C98A54A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A03487F2-E39B-4D54-85BA-FBF81C98A54A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A03487F2-E39B-4D54-85BA-FBF81C98A54A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A03487F2-E39B-4D54-85BA-FBF81C98A54A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

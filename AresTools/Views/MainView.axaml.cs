@@ -32,9 +32,9 @@ public partial class MainView : UserControl
 	private OperationType operation_type;
 	private bool continue_;
 	private bool isWorking;
-	private static UsedMethodsF usedMethodsF;
-	private static UsedMethodsI usedMethodsI;
-	private static UsedMethodsT usedMethodsT;
+	private static UsedMethodsF usedMethodsF = UsedMethodsF.CS1 | UsedMethodsF.AHF1;
+	private static UsedMethodsI usedMethodsI = UsedMethodsI.CS2 | UsedMethodsI.LZ2 | UsedMethodsI.HF2;
+	private static UsedMethodsT usedMethodsT = UsedMethodsT.CS1 | UsedMethodsT.LZ1;
 	private static int usedSizesF, usedSizesT;
 #if !DEBUG
 	private DateTime compressionStart;
@@ -47,12 +47,8 @@ public partial class MainView : UserControl
 	private readonly List<TcpClient> clients = []; //список клиентских подключений
 	private readonly List<NetworkStream> netStream = []; //список потока данных
 	private readonly int port = 11000;
-	private Process executorF;
-	private Process executorI;
-	private Process executorT;
-	private int executorIdF;
-	private int executorIdI;
-	private int executorIdT;
+	private Process executor;
+	private int executorId;
 #if RELEASE
 	private readonly Random random = new(1234567890);
 #endif
@@ -71,9 +67,7 @@ public partial class MainView : UserControl
 		ProgressBarStatus = new ProgressBar[ProgressBarGroups];
 		tcpListener = default!;
 		listenThread = default!;
-		executorF = default!;
-		executorI = default!;
-		executorT = default!;
+		executor = default!;
 		args = Environment.GetCommandLineArgs();
 		if (args.Length >= 1)
 			args = args[1..];
@@ -166,6 +160,13 @@ public partial class MainView : UserControl
 			tcpListener = new(IPAddress.Loopback, port);
 			listenThread = new(new ThreadStart(ListenThread)) { Name = "Ожидание подключения клиентов", IsBackground = true };
 			listenThread.Start(); //старт потока
+			if (args.Length != 0 && args[0] != "")
+			{
+				System.Threading.Thread.Sleep(MillisecondsPerSecond * 5);
+				operation_type = OperationType.Opening;
+				thread = new Thread(() => Thread(args[0][^1] switch { 'F' or 'f' => 0, 'I' or 'i' => 1, 'T' or 't' => 2, _ => 0 }, args[0][^1..].ToUpperInvariant(), true)) { Name = "Основной фоновый поток", IsBackground = true };
+				thread.Start();
+			}
 		}
 		catch
 		{
@@ -190,22 +191,20 @@ public partial class MainView : UserControl
 	{
 		var client = (int?)ID ?? 0;
 		byte[] receive;
-		var receiveLen = new byte[4];
+		var receiveLen = GC.AllocateUninitializedArray<byte>(4);
 		while (true)
 		{
 			try
 			{
 				netStream[client].ReadExactly(receiveLen);
-				receive = new byte[BitConverter.ToInt32(receiveLen)];
+				receive = GC.AllocateUninitializedArray<byte>(BitConverter.ToInt32(receiveLen));
 				netStream[client].ReadExactly(receive);
 				WorkUpReceiveMessage(client, receive);
 			}
 			catch
 			{
-				if (client >= clients.Length)
-					client = clients.Length - 1;
-				clients.RemoveAt(client);
-				netStream.RemoveAt(client);
+				clients.Clear();
+				netStream.Clear();
 				break;
 			}
 		}
@@ -224,40 +223,7 @@ public partial class MainView : UserControl
 
 	private async void ExecutorExited(object? sender, EventArgs? e)
 	{
-		if (executorF != null && !executorF.HasExited)
-		{
-			executorF.EnableRaisingEvents = false;
-			executorF.Kill();
-		}
-		if (executorI != null && !executorI.HasExited)
-		{
-			executorI.EnableRaisingEvents = false;
-			executorI.Kill();
-		}
-		if (executorT != null && !executorT.HasExited)
-		{
-			executorT.EnableRaisingEvents = false;
-			executorT.Kill();
-		}
-		var tempFilename = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\AresF-" + executorIdF + ".tmp";
-		try
-		{
-			if (File.Exists(tempFilename))
-				File.Delete(tempFilename);
-		}
-		catch
-		{
-		}
-		tempFilename = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\AresI-" + executorIdI + ".tmp";
-		try
-		{
-			if (File.Exists(tempFilename))
-				File.Delete(tempFilename);
-		}
-		catch
-		{
-		}
-		tempFilename = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\AresT-" + executorIdT + ".tmp";
+		var tempFilename = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + executorId + ".tmp";
 		try
 		{
 			if (File.Exists(tempFilename))
@@ -268,7 +234,7 @@ public partial class MainView : UserControl
 		}
 		var button = await Dispatcher.UIThread.InvokeAsync(async () =>
 			await MessageBoxManager.GetMessageBoxStandard("", "Произошла серьезная ошибка в рабочем модуле Ares и он аварийно завершился. Нажмите ОК, чтобы перезапустить его, или Отмена, чтобы выйти из приложения.", MsBox.Avalonia.Enums.ButtonEnum.OkCancel)
-			.ShowAsync() == MsBox.Avalonia.Enums.ButtonResult.Ok);
+			.ShowAsPopupAsync(this) == MsBox.Avalonia.Enums.ButtonResult.Ok);
 		if (!button)
 			Environment.Exit(0);
 		SetProgressBarsFull();
@@ -277,18 +243,10 @@ public partial class MainView : UserControl
 
 	private void StartExecutor()
 	{
-		executorF = ExecFunction.Start(MainClassF.Main, [port.ToString(), Environment.ProcessId.ToString()]);
-		executorIdF = executorF.Id;
-		executorF.EnableRaisingEvents = true;
-		executorF.Exited += ExecutorExited;
-		executorI = ExecFunction.Start(MainClassI.Main, [port.ToString(), Environment.ProcessId.ToString()]);
-		executorIdI = executorI.Id;
-		executorI.EnableRaisingEvents = true;
-		executorI.Exited += ExecutorExited;
-		executorT = ExecFunction.Start(MainClassT.Main, [port.ToString(), Environment.ProcessId.ToString()]);
-		executorIdT = executorT.Id;
-		executorT.EnableRaisingEvents = true;
-		executorT.Exited += ExecutorExited;
+		executor = ExecFunction.Start(Executor.Main, [port.ToString(), Environment.ProcessId.ToString()]);
+		executorId = executor.Id;
+		executor.EnableRaisingEvents = true;
+		executor.Exited += ExecutorExited;
 	}
 
 	private void SendMessageToClient(int index, byte[] toSend)
@@ -323,10 +281,10 @@ public partial class MainView : UserControl
 				await OpenFile(client, 0);
 			else if (message[0] == 2)
 				await Dispatcher.UIThread.InvokeAsync(async () =>
-					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось " + (operation_type is OperationType.Compression or OperationType.Recompression ? "сжать" : "распаковать") + " файл.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось " + (operation_type is OperationType.Compression or OperationType.Recompression ? "сжать" : "распаковать") + " файл.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 			else if (message[0] == 3)
 				await Dispatcher.UIThread.InvokeAsync(async () =>
-					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Файл сжат, но распаковка не удалась.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Файл сжат, но распаковка не удалась.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 			if (message[0] is not 0)
 			{
 				SetProgressBarsFull();
@@ -336,7 +294,7 @@ public partial class MainView : UserControl
 		{
 			if (message.Length != 0 && message[0] is not 0)
 				await Dispatcher.UIThread.InvokeAsync(async () =>
-					await MessageBoxManager.GetMessageBoxStandard("", "Произошла серьезная ошибка при попытке выполнить действие. Повторите попытку позже. Если проблема не исчезает, обратитесь к разработчикам приложения.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+					await MessageBoxManager.GetMessageBoxStandard("", "Произошла серьезная ошибка при попытке выполнить действие. Повторите попытку позже. Если проблема не исчезает, обратитесь к разработчикам приложения.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 		}
 	}
 
@@ -368,7 +326,7 @@ public partial class MainView : UserControl
 			process.Start();
 			System.Threading.Thread.Sleep(MillisecondsPerSecond);
 			await Dispatcher.UIThread.InvokeAsync(async () =>
-				await MessageBoxManager.GetMessageBoxStandard("", "Файл успешно распакован" + timeString + "!", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+				await MessageBoxManager.GetMessageBoxStandard("", "Файл успешно распакован" + timeString + "!", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 			process.WaitForExit();
 			try
 			{
@@ -380,7 +338,7 @@ public partial class MainView : UserControl
 		}
 		else
 			await Dispatcher.UIThread.InvokeAsync(async () =>
-				await MessageBoxManager.GetMessageBoxStandard("", "Файл успешно " + (operation_type is OperationType.Compression or OperationType.Recompression ? "сжат" : "распакован") + timeString + "!", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+				await MessageBoxManager.GetMessageBoxStandard("", "Файл успешно " + (operation_type is OperationType.Compression or OperationType.Recompression ? "сжат" : "распакован") + timeString + "!", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 	}
 
 	private void ThreadF() => Thread(0, "F", false);
@@ -394,7 +352,7 @@ public partial class MainView : UserControl
 		if (isWorking)
 		{
 			await Dispatcher.UIThread.InvokeAsync(async () =>
-				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось запустить сжатие/распаковку, так как существует другой активный процесс.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось запустить сжатие/распаковку, так как существует другой активный процесс.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 			return;
 		}
 		switch (operation_type)
@@ -410,7 +368,7 @@ public partial class MainView : UserControl
 			catch
 			{
 				await Dispatcher.UIThread.InvokeAsync(async () =>
-					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось распаковать файл.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось распаковать файл.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 				break;
 			}
 			await StartProcess(client, true);
@@ -421,7 +379,7 @@ public partial class MainView : UserControl
 			if (client == 0 && usedMethodsF.HasFlag(UsedMethodsF.CS4) && usedSizesF > 4 && new FileInfo(filename).Length > 16000000)
 			{
 				await Dispatcher.UIThread.InvokeAsync(async () =>
-					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Слишком большой размер фрагмента для PPM. Попробуйте уменьшить размер фрагмента, отключите PPM или возьмите меньший файл.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Слишком большой размер фрагмента для PPM. Попробуйте уменьшить размер фрагмента, отключите PPM или возьмите меньший файл.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 				break;
 			}
 			await StartProcess(client, false);
@@ -541,7 +499,7 @@ public partial class MainView : UserControl
 		catch
 		{
 			await Dispatcher.UIThread.InvokeAsync(async () =>
-				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось " + (unpack ? "распаковать" : "сжать") + " файл.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось " + (unpack ? "распаковать" : "сжать") + " файл.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 		}
 	}
 
@@ -551,24 +509,24 @@ public partial class MainView : UserControl
 			return true;
 		try
 		{
-			using var image = SixLabors.ImageSharp.Image.Load<Bgra32>(filename);
+			using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(filename);
 			if (image == null)
 			{
 				await Dispatcher.UIThread.InvokeAsync(async () =>
-					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось прочитать изображение.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось прочитать изображение.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 				return false;
 			}
 			if (image.Width < 16 || image.Height < 16 || image.Width * image.Height > 0x300000)
 			{
 				await Dispatcher.UIThread.InvokeAsync(async () =>
-					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Обе стороны изображения должны быть от 16 пикселов, а площадь - не более 3 мегапикселов.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Обе стороны изображения должны быть от 16 пикселов, а площадь - не более 3 мегапикселов.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 				return false;
 			}
 #if RELEASE
 			if (usedMethodsI.HasFlag(UsedMethodsI.CS2) && usedMethodsI.HasFlag(UsedMethodsI.LZ2) && !usedMethodsI.HasFlag(UsedMethodsI.AHF) && new Chain(image.Width * image.Height).Any((_, index) => image[index % image.Width, index / image.Width].A != ValuesInByte - 1))
 			{
 				if (await Dispatcher.UIThread.InvokeAsync(async () =>
-					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Сжатие этого изображения таким наборов методов в разработке. Переключиться на максимально близкий набор методов и сжать изображение?", MsBox.Avalonia.Enums.ButtonEnum.YesNo).ShowAsync())
+					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Сжатие этого изображения таким наборов методов в разработке. Переключиться на максимально близкий набор методов и сжать изображение?", MsBox.Avalonia.Enums.ButtonEnum.YesNo).ShowAsPopupAsync(this))
 					== MsBox.Avalonia.Enums.ButtonResult.Yes)
 				{
 					await Dispatcher.UIThread.InvokeAsync(() => RadioButtonAHFI.IsChecked = true);
@@ -583,7 +541,7 @@ public partial class MainView : UserControl
 		catch
 		{
 			await Dispatcher.UIThread.InvokeAsync(async () =>
-				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось прочитать изображение.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось прочитать изображение.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 			return false;
 		}
 	}
@@ -618,7 +576,7 @@ public partial class MainView : UserControl
 
 	private void ButtonStop_Click(object? sender, RoutedEventArgs e)
 	{
-		executorF?.Kill();
+		executor?.Kill();
 		SetValue(ProgressBarSupertotal, -1);
 		SetValue(ProgressBarTotal, -1);
 		for (var i = 0; i < ProgressBarGroups; i++)
@@ -637,22 +595,26 @@ public partial class MainView : UserControl
 			return;
 		var selectedIndex = ComboQuickSetupF.SelectedIndex;
 		CheckBoxCS1F.IsChecked = selectedIndex >= 0;
-		CheckBoxLZ1F.IsChecked = selectedIndex >= 1;
-		CheckBoxHF1F.IsChecked = selectedIndex >= 0;
+		CheckBoxAHF1F.IsChecked = selectedIndex >= 1;
 		CheckBoxCS2F.IsChecked = selectedIndex >= 2;
-		CheckBoxAHF2F.IsChecked = selectedIndex >= 3;
+		CheckBoxLZ2F.IsChecked = selectedIndex >= 3;
+		CheckBoxHF2F.IsChecked = selectedIndex >= 2;
 		CheckBoxCS4F.IsChecked = selectedIndex >= 4;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxCS1F_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxCS1F == null)
+			return;
 		usedMethodsF ^= UsedMethodsF.CS1;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxCS2F_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxCS2F == null)
+			return;
 		usedMethodsF ^= UsedMethodsF.CS2;
 		SendUsedMethods();
 	}
@@ -664,9 +626,11 @@ public partial class MainView : UserControl
 		{
 			CheckBoxCS3F.IsChecked = false;
 			Dispatcher.UIThread.InvokeAsync(async () =>
-				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Этот метод находится в разработке.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Этот метод находится в разработке.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 		}
 #else
+		if (CheckBoxCS3F == null)
+			return;
 		usedMethodsF ^= UsedMethodsF.CS3;
 		SendUsedMethods();
 #endif
@@ -674,6 +638,8 @@ public partial class MainView : UserControl
 
 	private void CheckBoxCS4F_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxCS4F == null)
+			return;
 		usedMethodsF ^= UsedMethodsF.CS4;
 		SendUsedMethods();
 	}
@@ -685,33 +651,41 @@ public partial class MainView : UserControl
 		{
 			CheckBoxCS5F.IsChecked = false;
 			Dispatcher.UIThread.InvokeAsync(async () =>
-				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Этот метод находится в разработке.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Этот метод находится в разработке.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 		}
 #else
+		if (CheckBoxCS5F == null)
+			return;
 		usedMethodsF ^= UsedMethodsF.CS5;
 		SendUsedMethods();
 #endif
 	}
 
-	private void CheckBoxLZ1F_CheckedChanged(object? sender, RoutedEventArgs e)
+	private void CheckBoxAHF1F_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
-		usedMethodsF ^= UsedMethodsF.LZ1;
-		if (CheckBoxHF1F != null && !(CheckBoxHF1F.IsChecked ?? false) && CheckBoxLZ1F != null && !(CheckBoxLZ1F.IsChecked ?? false))
-			CheckBoxHF1F.IsChecked = true;
+		if (CheckBoxAHF1F == null)
+			return;
+		usedMethodsF ^= UsedMethodsF.AHF1;
 		SendUsedMethods();
 	}
 
-	private void CheckBoxHF1F_CheckedChanged(object? sender, RoutedEventArgs e)
+	private void CheckBoxLZ2F_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
-		usedMethodsF ^= UsedMethodsF.HF1;
-		if (CheckBoxHF1F != null && !(CheckBoxHF1F.IsChecked ?? false) && CheckBoxLZ1F != null && !(CheckBoxLZ1F.IsChecked ?? false))
-			CheckBoxLZ1F.IsChecked = true;
+		if (CheckBoxLZ2F == null)
+			return;
+		usedMethodsF ^= UsedMethodsF.LZ2;
+		if (CheckBoxHF2F != null && !(CheckBoxHF2F.IsChecked ?? false) && CheckBoxLZ2F != null && !(CheckBoxLZ2F.IsChecked ?? false))
+			CheckBoxHF2F.IsChecked = true;
 		SendUsedMethods();
 	}
 
-	private void CheckBoxAHF2F_CheckedChanged(object? sender, RoutedEventArgs e)
+	private void CheckBoxHF2F_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
-		usedMethodsF ^= UsedMethodsF.AHF2;
+		if (CheckBoxHF2F == null)
+			return;
+		usedMethodsF ^= UsedMethodsF.HF2;
+		if (CheckBoxHF2F != null && !(CheckBoxHF2F.IsChecked ?? false) && CheckBoxLZ2F != null && !(CheckBoxLZ2F.IsChecked ?? false))
+			CheckBoxLZ2F.IsChecked = true;
 		SendUsedMethods();
 	}
 
@@ -720,6 +694,14 @@ public partial class MainView : UserControl
 		if (ComboFragmentLengthF == null)
 			return;
 		usedSizesF = (usedSizesF & ~0xF) | ComboFragmentLengthF.SelectedIndex;
+		SendUsedSizes();
+	}
+
+	private void ComboBWTLengthF_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+	{
+		if (ComboBWTLengthF == null)
+			return;
+		usedSizesF = (usedSizesF & ~0x70) | ComboBWTLengthF.SelectedIndex << 4;
 		SendUsedSizes();
 	}
 
@@ -770,24 +752,32 @@ public partial class MainView : UserControl
 
 	private void CheckBoxCS1I_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxCS1I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.CS1;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxCS2I_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxCS2I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.CS2;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxCS3I_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxCS3I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.CS3;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxCS4I_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxCS4I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.CS4;
 		SendUsedMethods();
 	}
@@ -799,9 +789,11 @@ public partial class MainView : UserControl
 		{
 			CheckBoxCS5I.IsChecked = false;
 			Dispatcher.UIThread.InvokeAsync(async () =>
-				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Этот метод находится в разработке.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Этот метод находится в разработке.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 		}
 #else
+		if (CheckBoxCS5I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.CS5;
 		SendUsedMethods();
 #endif
@@ -814,9 +806,11 @@ public partial class MainView : UserControl
 		{
 			CheckBoxCS6I.IsChecked = false;
 			Dispatcher.UIThread.InvokeAsync(async () =>
-				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Этот метод находится в разработке.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsync());
+				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Этот метод находится в разработке.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 		}
 #else
+		if (CheckBoxCS6I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.CS6;
 		SendUsedMethods();
 #endif
@@ -824,72 +818,64 @@ public partial class MainView : UserControl
 
 	private void CheckBoxHF1I_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxHF1I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.HF1;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxLZ1I_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxLZ1I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.LZ1;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxHF2I_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxHF2I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.HF2;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxLZ2I_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxLZ2I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.LZ2;
-		SendUsedMethods();
-	}
-
-	private void CheckBoxHF3I_CheckedChanged(object? sender, RoutedEventArgs e)
-	{
-		usedMethodsI ^= UsedMethodsI.HF3;
-		SendUsedMethods();
-	}
-
-	private void CheckBoxLZ3I_CheckedChanged(object? sender, RoutedEventArgs e)
-	{
-		usedMethodsI ^= UsedMethodsI.LZ3;
-		SendUsedMethods();
-	}
-
-	private void CheckBoxHF4I_CheckedChanged(object? sender, RoutedEventArgs e)
-	{
-		usedMethodsI ^= UsedMethodsI.HF4;
-		SendUsedMethods();
-	}
-
-	private void CheckBoxLZ4I_CheckedChanged(object? sender, RoutedEventArgs e)
-	{
-		usedMethodsI ^= UsedMethodsI.LZ4;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxHF5I_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxHF5I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.HF5;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxLZ5I_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxLZ5I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.LZ5;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxLZ6I_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxLZ6I == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.LZ6;
 		SendUsedMethods();
 	}
 
 	private void RadioButtonAHFI_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (RadioButtonAHFI == null)
+			return;
 		usedMethodsI ^= UsedMethodsI.AHF;
 		SendUsedMethods();
 	}
@@ -938,36 +924,48 @@ public partial class MainView : UserControl
 
 	private void CheckBoxCS1T_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxCS1T == null)
+			return;
 		usedMethodsT ^= UsedMethodsT.CS1;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxCS2T_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxCS2T == null)
+			return;
 		usedMethodsT ^= UsedMethodsT.CS2;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxCS3T_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxCS3T == null)
+			return;
 		usedMethodsT ^= UsedMethodsT.CS3;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxLZ1T_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxLZ1T == null)
+			return;
 		usedMethodsT ^= UsedMethodsT.LZ1;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxCOMB1T_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxCOMB1T == null)
+			return;
 		usedMethodsT ^= UsedMethodsT.COMB1;
 		SendUsedMethods();
 	}
 
 	private void CheckBoxLZ2T_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
+		if (CheckBoxLZ2T == null)
+			return;
 		usedMethodsT ^= UsedMethodsT.LZ2;
 		SendUsedMethods();
 	}
@@ -983,7 +981,15 @@ public partial class MainView : UserControl
 	private void SendUsedMethods()
 	{
 		if (netStream.Length < 3)
-			return;
+			try
+			{
+				Dispatcher.UIThread.InvokeAsync(async () =>
+					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Рабочий модуль Ares еще не загрузился. Подождите несколько секунд, после чего нажмите на любой флажок, чтобы изменить состояние параметров (нажмите второй раз на него же, чтобы вернуть состояние, которое вы попытались установить сейчас).", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
+				return;
+			}
+			catch
+			{
+			}
 		SendMessageToClient(0, [0, .. BitConverter.GetBytes((int)usedMethodsF)]);
 		SendMessageToClient(1, [0, .. BitConverter.GetBytes((int)usedMethodsI)]);
 		SendMessageToClient(2, [0, .. BitConverter.GetBytes((int)usedMethodsT)]);
@@ -992,7 +998,15 @@ public partial class MainView : UserControl
 	private void SendUsedSizes()
 	{
 		if (netStream.Length < 3)
-			return;
+			try
+			{
+				Dispatcher.UIThread.InvokeAsync(async () =>
+					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Рабочий модуль Ares еще не загрузился. Подождите несколько секунд, после чего выберите любой размер фрагмента, кроме текущего, чтобы изменить состояние параметров (снова выберите текущий, чтобы вернуть состояние, которое вы попытались установить сейчас).", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
+				return;
+			}
+			catch
+			{
+			}
 		SendMessageToClient(0, [1, .. BitConverter.GetBytes(usedSizesF)]);
 		SendMessageToClient(2, [1, .. BitConverter.GetBytes(usedSizesT)]);
 	}

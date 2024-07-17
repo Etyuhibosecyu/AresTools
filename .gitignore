@@ -462,3 +462,5 @@ $RECYCLE.BIN/
 *.exe
 *.bat
 *.keystore
+ffmpeg
+ffprobe

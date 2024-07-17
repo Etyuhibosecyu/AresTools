@@ -7,9 +7,6 @@
 
   
   <ItemGroup>
-    <ProjectReference Include="..\..\AresF\AresFLib\AresFLib.csproj" />
-    <ProjectReference Include="..\..\AresI\AresILib\AresILib.csproj" />
-    <ProjectReference Include="..\..\AresT\AresTLib\AresTLib.csproj" />
     <AvaloniaResource Include="Assets\**" />
     <PackageReference Include="Avalonia" Version="11.0.10" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
@@ -21,5 +18,10 @@
 		<PackageReference Include="Tmds.ExecFunction" Version="0.7.1" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
+  </ItemGroup>
+
+  
+  <ItemGroup>
+    <ProjectReference Include="..\AresToolsExecutor\AresToolsExecutor.csproj" />
   </ItemGroup>
 </Project>
