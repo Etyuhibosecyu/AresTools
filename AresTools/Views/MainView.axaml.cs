@@ -1,4 +1,5 @@
-﻿using AresTools.ViewModels;
+﻿using AresALib;
+using AresTools.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Interactivity;
@@ -35,7 +36,7 @@ public partial class MainView : UserControl
 	private static UsedMethodsF usedMethodsF = UsedMethodsF.CS1 | UsedMethodsF.AHF1;
 	private static UsedMethodsI usedMethodsI = UsedMethodsI.CS2 | UsedMethodsI.LZ2 | UsedMethodsI.HF2;
 	private static UsedMethodsT usedMethodsT = UsedMethodsT.CS1 | UsedMethodsT.LZ1;
-	private static int usedSizesF, usedSizesT;
+	private static int usedSizesF = 68, usedSizesT = 4;
 #if !DEBUG
 	private DateTime compressionStart;
 #endif
@@ -147,6 +148,9 @@ public partial class MainView : UserControl
 			ProgressBarStatus[i].Value = 0.75;
 			ProgressBarStatus[i].Foreground = new SolidColorBrush(new Color(255, 128, 128, 191));
 		}
+		//var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
+		//var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		//MainClassA.MainThread(@"D:\User\Documents\Visual Studio 2022\Projects\Ares\Files\Extra\Suzanne_Vega_-_Toms_Diner.wav", temp, MainClassA.Compress, false);
 		//TabView.CurrentItem = TabItemText;
 		ComboQuickSetupF.SelectedIndex = 1;
 		filename = args.Length == 0 ? "" : args[0];
@@ -917,7 +921,7 @@ public partial class MainView : UserControl
 		CheckBoxLZ1T.IsChecked = selectedIndex >= 1;
 		CheckBoxCOMB1T.IsChecked = false;
 		CheckBoxCS2T.IsChecked = selectedIndex >= 2;
-		CheckBoxLZ2T.IsChecked = selectedIndex >= 3;
+		CheckBoxCOMB2T.IsChecked = selectedIndex >= 3;
 		CheckBoxCS3T.IsChecked = selectedIndex >= 4;
 		SendUsedMethods();
 	}
@@ -962,11 +966,11 @@ public partial class MainView : UserControl
 		SendUsedMethods();
 	}
 
-	private void CheckBoxLZ2T_CheckedChanged(object? sender, RoutedEventArgs e)
+	private void CheckBoxCOMB2T_CheckedChanged(object? sender, RoutedEventArgs e)
 	{
-		if (CheckBoxLZ2T == null)
+		if (CheckBoxCOMB2T == null)
 			return;
-		usedMethodsT ^= UsedMethodsT.LZ2;
+		usedMethodsT ^= UsedMethodsT.COMB2;
 		SendUsedMethods();
 	}
 

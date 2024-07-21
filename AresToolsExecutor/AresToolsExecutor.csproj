@@ -7,6 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\AresA\AresALib\AresALib.csproj" />
 		<ProjectReference Include="..\..\AresF\AresFLib\AresFLib.csproj" />
 		<ProjectReference Include="..\..\AresT\AresTLib\AresTLib.csproj" />
 		<ProjectReference Include="..\..\AresV\AresVLib\AresVLib.csproj" />

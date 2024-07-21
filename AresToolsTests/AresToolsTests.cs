@@ -338,10 +338,10 @@ public partial class DecompressionTests
 	}
 
 	[TestMethod]
-	public void TestHFW_BWT_LZ()
+	public void TestHFW_BWT_COMB()
 	{
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-		PresentMethodsT = UsedMethodsT.CS2 | UsedMethodsT.LZ2;
+		PresentMethodsT = UsedMethodsT.CS2 | UsedMethodsT.COMB2;
 		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
 		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var file in files)
