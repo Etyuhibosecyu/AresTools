@@ -1,5 +1,6 @@
 ﻿using AresALib;
 using AresTools.ViewModels;
+using AresVLib;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Interactivity;
@@ -20,6 +21,13 @@ namespace AresTools.Views;
 public partial class MainView : UserControl
 {
 	private bool emptyFileName;
+	private enum ClientIndex
+	{
+		Files,
+		Images,
+		Text,
+		Zipping,
+	};
 	private enum OperationType
 	{
 		Opening,
@@ -32,18 +40,19 @@ public partial class MainView : UserControl
 	private string filename = "";
 	private OperationType operation_type;
 	private bool continue_;
-	private bool isWorking;
+	private bool isWorking, multiSelect;
 	private static UsedMethodsF usedMethodsF = UsedMethodsF.CS1 | UsedMethodsF.AHF1;
-	private static UsedMethodsI usedMethodsI = UsedMethodsI.CS2 | UsedMethodsI.LZ2 | UsedMethodsI.HF2;
+	private static UsedMethodsI usedMethodsI = UsedMethodsI.CS2 | UsedMethodsI.LZ2 | UsedMethodsI.HF2 | UsedMethodsI.AHF;
 	private static UsedMethodsT usedMethodsT = UsedMethodsT.CS1 | UsedMethodsT.LZ1;
+	private static UsedMethodsZ usedMethodsZ = UsedMethodsZ.ArchiveThenCompress | UsedMethodsZ.ApplyF | UsedMethodsZ.ApplyI;
 	private static int usedSizesF = 68, usedSizesT = 4;
 #if !DEBUG
 	private DateTime compressionStart;
 #endif
 
 	private readonly string[] args;
-	private readonly TcpListener tcpListener; //монитор подключений TCP клиентов
-	private readonly Thread listenThread; //создание потока
+	private TcpListener tcpListener; //монитор подключений TCP клиентов
+	private Thread listenThread; //создание потока
 
 	private readonly List<TcpClient> clients = []; //список клиентских подключений
 	private readonly List<NetworkStream> netStream = []; //список потока данных
@@ -51,7 +60,7 @@ public partial class MainView : UserControl
 	private Process executor;
 	private int executorId;
 #if RELEASE
-	private readonly Random random = new(1234567890);
+	private readonly Random random = new();
 #endif
 
 	public MainView()
@@ -148,27 +157,33 @@ public partial class MainView : UserControl
 			ProgressBarStatus[i].Value = 0.75;
 			ProgressBarStatus[i].Foreground = new SolidColorBrush(new Color(255, 128, 128, 191));
 		}
-		//var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		//var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
-		//MainClassA.MainThread(@"D:\User\Documents\Visual Studio 2022\Projects\Ares\Files\Extra\Suzanne_Vega_-_Toms_Diner.wav", temp, MainClassA.Compress, false);
-		//TabView.CurrentItem = TabItemText;
-		ComboQuickSetupF.SelectedIndex = 1;
-		filename = args.Length == 0 ? "" : args[0];
 #if RELEASE
 		port = random.Next(1024, 65536);
 		StartExecutor();
 #endif
+	}
+
+	private void UserControl_Loaded(object? sender, RoutedEventArgs e)
+	{
+		//var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		//var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		//MainClassV.MainThread(@"D:\User\Pictures\01-05-2024 155324.mp4", temp, MainClassV.Compress, false);
+		//TabView.CurrentItem = TabItemText;
+		ComboQuickSetupF.SelectedIndex = 1;
+		filename = args.Length == 0 ? "" : args[0];
 		System.Threading.Thread.CurrentThread.Priority = ThreadPriority.Normal;
 		try
 		{
 			tcpListener = new(IPAddress.Loopback, port);
-			listenThread = new(new ThreadStart(ListenThread)) { Name = "Ожидание подключения клиентов", IsBackground = true };
+			listenThread = new(ListenThread) { Name = "Ожидание подключения клиентов", IsBackground = true };
 			listenThread.Start(); //старт потока
 			if (args.Length != 0 && args[0] != "")
 			{
 				System.Threading.Thread.Sleep(MillisecondsPerSecond * 5);
 				operation_type = OperationType.Opening;
-				thread = new Thread(() => Thread(args[0][^1] switch { 'F' or 'f' => 0, 'I' or 'i' => 1, 'T' or 't' => 2, _ => 0 }, args[0][^1..].ToUpperInvariant(), true)) { Name = "Основной фоновый поток", IsBackground = true };
+				thread = new Thread(() => Thread(args[0][^1] switch { 'F' or 'f' => ClientIndex.Files, 'I' or 'i' =>
+					ClientIndex.Images, 'T' or 't' => ClientIndex.Text, 'Z' or 'z' => ClientIndex.Zipping, _ => 0 },
+					args[0][^1..].ToUpperInvariant(), true)) { Name = "Основной фоновый поток", IsBackground = true };
 				thread.Start();
 			}
 		}
@@ -203,7 +218,7 @@ public partial class MainView : UserControl
 				netStream[client].ReadExactly(receiveLen);
 				receive = GC.AllocateUninitializedArray<byte>(BitConverter.ToInt32(receiveLen));
 				netStream[client].ReadExactly(receive);
-				WorkUpReceiveMessage(client, receive);
+				WorkUpReceiveMessage((ClientIndex)client, receive);
 			}
 			catch
 			{
@@ -227,7 +242,7 @@ public partial class MainView : UserControl
 
 	private async void ExecutorExited(object? sender, EventArgs? e)
 	{
-		var tempFilename = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + executorId + ".tmp";
+		var tempFilename = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + executorId + ".tmp";
 		try
 		{
 			if (File.Exists(tempFilename))
@@ -253,12 +268,14 @@ public partial class MainView : UserControl
 		executor.Exited += ExecutorExited;
 	}
 
-	private void SendMessageToClient(int index, byte[] toSend)
+	private void SendMessageToClient(ClientIndex index, byte[] toSend)
 	{
+		var index2 = (int)index;
 		var toSendLen = BitConverter.GetBytes(toSend.Length);
-		netStream[index].Write(toSendLen);
-		netStream[index].Write(toSend);
-		netStream[index].Flush(); //удаление данных из потока
+		netStream[index2].Write(toSendLen);
+		netStream[index2].Flush(); //удаление данных из потока
+		netStream[index2].Write(toSend);
+		netStream[index2].Flush(); //удаление данных из потока
 	}
 
 	private static async void SetValue(ProgressBar pb, double new_value) => await Dispatcher.UIThread.InvokeAsync(() => SetValueInternal(pb, new_value));
@@ -271,7 +288,7 @@ public partial class MainView : UserControl
 			pb.Value = new_value;
 	}
 
-	private async void WorkUpReceiveMessage(int client, byte[] message)
+	private async void WorkUpReceiveMessage(ClientIndex client, byte[] message)
 	{
 		try
 		{
@@ -279,9 +296,9 @@ public partial class MainView : UserControl
 				return;
 			if (message[0] == 0 && message.Length == ProgressBarGroups * 24 + 17 && isWorking)
 				UpdateProgressBars(message);
-			else if (message[0] == 1 && client == 1 && message.Length == 2)
+			else if (message[0] == 1 && client == ClientIndex.Images && message.Length == 2)
 				await OpenFile(client, message[1]);
-			else if (message[0] == 1 && client != 1 && message.Length == 1)
+			else if (message[0] == 1 && client != ClientIndex.Images && message.Length == 1)
 				await OpenFile(client, 0);
 			else if (message[0] == 2)
 				await Dispatcher.UIThread.InvokeAsync(async () =>
@@ -314,7 +331,7 @@ public partial class MainView : UserControl
 		}
 	}
 
-	private async Task OpenFile(int client, byte transparency)
+	private async Task OpenFile(ClientIndex client, byte transparency)
 	{
 		var timeString = "";
 #if !DEBUG
@@ -323,7 +340,7 @@ public partial class MainView : UserControl
 #endif
 		if (operation_type == OperationType.Opening)
 		{
-			var path = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\" + Path.GetFileNameWithoutExtension(filename) + (client != 1 ? "" : transparency != 0 ? ".tga" : ".bmp");
+			var path = Path.Combine(Environment.GetEnvironmentVariable("temp") ?? throw new IOException(), Path.GetFileNameWithoutExtension(filename) + (client != ClientIndex.Images ? "" : transparency != 0 ? ".tga" : ".bmp"));
 			using Process process = new();
 			process.StartInfo.FileName = "explorer";
 			process.StartInfo.Arguments = "\"" + path + "\"";
@@ -334,7 +351,8 @@ public partial class MainView : UserControl
 			process.WaitForExit();
 			try
 			{
-				File.Delete(path);
+				if (client != ClientIndex.Zipping)
+					File.Delete(path);
 			}
 			catch
 			{
@@ -345,13 +363,15 @@ public partial class MainView : UserControl
 				await MessageBoxManager.GetMessageBoxStandard("", "Файл успешно " + (operation_type is OperationType.Compression or OperationType.Recompression ? "сжат" : "распакован") + timeString + "!", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 	}
 
-	private void ThreadF() => Thread(0, "F", false);
+	private void ThreadF() => Thread(ClientIndex.Files, "F", false);
 
-	private void ThreadI() => Thread(1, "I", false);
+	private void ThreadI() => Thread(ClientIndex.Images, "I", false);
 
-	private void ThreadT() => Thread(2, "T", false);
+	private void ThreadT() => Thread(ClientIndex.Text, "T", false);
 
-	private async void Thread(int client, string filter, bool startImmediate)
+	private void ThreadZ() => Thread(ClientIndex.Zipping, "Z", false);
+
+	private async void Thread(ClientIndex client, string filter, bool startImmediate)
 	{
 		if (isWorking)
 		{
@@ -359,6 +379,7 @@ public partial class MainView : UserControl
 				await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Не удалось запустить сжатие/распаковку, так как существует другой активный процесс.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
 			return;
 		}
+		multiSelect = false;
 		switch (operation_type)
 		{
 			case OperationType.Opening:
@@ -378,9 +399,11 @@ public partial class MainView : UserControl
 			await StartProcess(client, true);
 			return;
 			case OperationType.Compression:
-			if (ProcessStartup(client == 1 ? "Images" : "").Result is bool || !await ValidateImageAsync(client))
+			if (client == ClientIndex.Zipping)
+				multiSelect = true;
+			if (ProcessStartup(client == ClientIndex.Images ? "Images" : "").Result is bool || !await ValidateImageAsync(client))
 				break;
-			if (client == 0 && usedMethodsF.HasFlag(UsedMethodsF.CS4) && usedSizesF > 4 && new FileInfo(filename).Length > 16000000)
+			if (client == ClientIndex.Files && usedMethodsF.HasFlag(UsedMethodsF.CS4) && (usedSizesF & 0xF) > 4 && new FileInfo(filename).Length > 16000000)
 			{
 				await Dispatcher.UIThread.InvokeAsync(async () =>
 					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Слишком большой размер фрагмента для PPM. Попробуйте уменьшить размер фрагмента, отключите PPM или возьмите меньший файл.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
@@ -451,8 +474,17 @@ public partial class MainView : UserControl
 	private async Task<int> SetOFDParsInternal(string filter)
 	{
 		var fileResult = await Dispatcher.UIThread.InvokeAsync(async () =>
-			await TopLevel.GetTopLevel(this)?.StorageProvider.OpenFilePickerAsync(new() { Title = $"Select the *{string.Join(" or *", MainViewModel.AresFilesMasks[filter])} file", FileTypeFilter = [MainViewModel.GetFilesType(filter)] })!);
-		filename = fileResult?.Count == 0 ? "" : fileResult?[0]?.TryGetLocalPath() ?? "";
+			await TopLevel.GetTopLevel(this)?.StorageProvider.OpenFilePickerAsync(new()
+			{
+				Title = $"Select the *{string.Join(" or *", MainViewModel.AresFilesMasks[filter])} file",
+				FileTypeFilter = [MainViewModel.GetFilesType(filter)], AllowMultiple = multiSelect
+			})!);
+		if (fileResult?.Count == 0)
+			filename = "";
+		else if (multiSelect)
+			filename = string.Join("<>", fileResult?.Take(ValuesInByte - 1).Convert(x => x?.TryGetLocalPath()).Filter(x => !string.IsNullOrEmpty(x)).ToArray() ?? []);
+		else
+			filename = fileResult?[0]?.TryGetLocalPath() ?? "";
 		if (filename == "" || !MainViewModel.AresFilesMasks[filter].Any(x => filename.EndsWith(x)))
 			emptyFileName = true;
 		return 0;
@@ -478,16 +510,22 @@ public partial class MainView : UserControl
 		ButtonOpenForUnpackingI.IsEnabled = isEnabled;
 		ButtonOpenForRecompressionI.IsEnabled = isEnabled;
 		ComboQuickSetupI.IsEnabled = isEnabled;
+		GridSettingsI.IsEnabled = isEnabled;
 		ButtonOpenT.IsEnabled = isEnabled;
 		ButtonOpenForCompressionT.IsEnabled = isEnabled;
 		ButtonOpenForUnpackingT.IsEnabled = isEnabled;
 		ButtonOpenForRecompressionT.IsEnabled = isEnabled;
 		ComboQuickSetupT.IsEnabled = isEnabled;
 		GridSettingsT.IsEnabled = isEnabled;
+		ButtonOpenArchive.IsEnabled = isEnabled;
+		ButtonCreateArchive.IsEnabled = isEnabled;
+		ButtonUnpackArchive.IsEnabled = isEnabled;
+		ButtonRepackArchive.IsEnabled = isEnabled;
+		StackPanelArchiving.IsEnabled = isEnabled;
 		return 0;
 	}
 
-	private async Task StartProcess(int client, bool unpack)
+	private async Task StartProcess(ClientIndex client, bool unpack)
 	{
 		try
 		{
@@ -507,9 +545,9 @@ public partial class MainView : UserControl
 		}
 	}
 
-	private async Task<bool> ValidateImageAsync(int client)
+	private async Task<bool> ValidateImageAsync(ClientIndex client)
 	{
-		if (client != 1)
+		if (client != ClientIndex.Images)
 			return true;
 		try
 		{
@@ -560,21 +598,21 @@ public partial class MainView : UserControl
 	private void ButtonOpenForCompressionF_Click(object? sender, RoutedEventArgs e)
 	{
 		operation_type = OperationType.Compression;
-		thread = new Thread(new ThreadStart(ThreadF)) { IsBackground = true, Name = "Поток сжатия" };
+		thread = new Thread(ThreadF) { IsBackground = true, Name = "Поток сжатия" };
 		thread.Start();
 	}
 
 	private void ButtonOpenForUnpackingF_Click(object? sender, RoutedEventArgs e)
 	{
 		operation_type = OperationType.Unpacking;
-		thread = new Thread(new ThreadStart(ThreadF)) { IsBackground = true, Name = "Поток распаковки" };
+		thread = new Thread(ThreadF) { IsBackground = true, Name = "Поток распаковки" };
 		thread.Start();
 	}
 
 	private void ButtonOpenForRecompressionF_Click(object? sender, RoutedEventArgs e)
 	{
 		operation_type = OperationType.Recompression;
-		thread = new Thread(new ThreadStart(ThreadF)) { IsBackground = true, Name = "Поток пересжатия" };
+		thread = new Thread(ThreadF) { IsBackground = true, Name = "Поток пересжатия" };
 		thread.Start();
 	}
 
@@ -698,6 +736,7 @@ public partial class MainView : UserControl
 		if (ComboFragmentLengthF == null)
 			return;
 		usedSizesF = (usedSizesF & ~0xF) | ComboFragmentLengthF.SelectedIndex;
+		ComboFragmentLengthT.SelectedIndex = ComboFragmentLengthF.SelectedIndex;
 		SendUsedSizes();
 	}
 
@@ -706,6 +745,15 @@ public partial class MainView : UserControl
 		if (ComboBWTLengthF == null)
 			return;
 		usedSizesF = (usedSizesF & ~0x70) | ComboBWTLengthF.SelectedIndex << 4;
+		ComboFragmentLengthF.SelectedIndex = ComboFragmentLengthT.SelectedIndex;
+		SendUsedSizes();
+	}
+
+	private void ComboLZDictionaryF_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+	{
+		if (ComboLZDictionaryF == null)
+			return;
+		usedSizesF = (usedSizesF & ~0x380) | ComboLZDictionaryF.SelectedIndex << 7;
 		SendUsedSizes();
 	}
 
@@ -719,21 +767,21 @@ public partial class MainView : UserControl
 	private void ButtonOpenForCompressionI_Click(object? sender, RoutedEventArgs e)
 	{
 		operation_type = OperationType.Compression;
-		thread = new Thread(new ThreadStart(ThreadI)) { IsBackground = true, Name = "Поток сжатия" };
+		thread = new Thread(ThreadI) { IsBackground = true, Name = "Поток сжатия" };
 		thread.Start();
 	}
 
 	private void ButtonOpenForUnpackingI_Click(object? sender, RoutedEventArgs e)
 	{
 		operation_type = OperationType.Unpacking;
-		thread = new Thread(new ThreadStart(ThreadI)) { IsBackground = true, Name = "Поток распаковки" };
+		thread = new Thread(ThreadI) { IsBackground = true, Name = "Поток распаковки" };
 		thread.Start();
 	}
 
 	private void ButtonOpenForRecompressionI_Click(object? sender, RoutedEventArgs e)
 	{
 		operation_type = OperationType.Recompression;
-		thread = new Thread(new ThreadStart(ThreadI)) { IsBackground = true, Name = "Поток пересжатия" };
+		thread = new Thread(ThreadI) { IsBackground = true, Name = "Поток пересжатия" };
 		thread.Start();
 	}
 
@@ -894,21 +942,21 @@ public partial class MainView : UserControl
 	private void ButtonOpenForCompressionT_Click(object? sender, RoutedEventArgs e)
 	{
 		operation_type = OperationType.Compression;
-		thread = new Thread(new ThreadStart(ThreadT)) { IsBackground = true, Name = "Поток сжатия" };
+		thread = new Thread(ThreadT) { IsBackground = true, Name = "Поток сжатия" };
 		thread.Start();
 	}
 
 	private void ButtonOpenForUnpackingT_Click(object? sender, RoutedEventArgs e)
 	{
 		operation_type = OperationType.Unpacking;
-		thread = new Thread(new ThreadStart(ThreadT)) { IsBackground = true, Name = "Поток распаковки" };
+		thread = new Thread(ThreadT) { IsBackground = true, Name = "Поток распаковки" };
 		thread.Start();
 	}
 
 	private void ButtonOpenForRecompressionT_Click(object? sender, RoutedEventArgs e)
 	{
 		operation_type = OperationType.Recompression;
-		thread = new Thread(new ThreadStart(ThreadT)) { IsBackground = true, Name = "Поток пересжатия" };
+		thread = new Thread(ThreadT) { IsBackground = true, Name = "Поток пересжатия" };
 		thread.Start();
 	}
 
@@ -979,12 +1027,78 @@ public partial class MainView : UserControl
 		if (ComboFragmentLengthT == null)
 			return;
 		usedSizesT = (usedSizesT & ~0xF) | ComboFragmentLengthT.SelectedIndex;
+		ComboFragmentLengthF.SelectedIndex = ComboFragmentLengthT.SelectedIndex;
 		SendUsedSizes();
+	}
+
+	private void ButtonOpenArchive_Click(object? sender, RoutedEventArgs e)
+	{
+		operation_type = OperationType.Opening;
+		thread = new Thread(ThreadZ) { IsBackground = true, Name = "Поток открытия" };
+		thread.Start();
+	}
+
+	private void ButtonCreateArchive_Click(object? sender, RoutedEventArgs e)
+	{
+		operation_type = OperationType.Compression;
+		thread = new Thread(ThreadZ) { IsBackground = true, Name = "Поток сжатия" };
+		thread.Start();
+	}
+
+	private void ButtonUnpackArchive_Click(object? sender, RoutedEventArgs e)
+	{
+		operation_type = OperationType.Unpacking;
+		thread = new Thread(ThreadZ) { IsBackground = true, Name = "Поток распаковки" };
+		thread.Start();
+	}
+
+	private void ButtonRepackArchive_Click(object? sender, RoutedEventArgs e)
+	{
+		operation_type = OperationType.Recompression;
+		thread = new Thread(ThreadZ) { IsBackground = true, Name = "Поток пересжатия" };
+		thread.Start();
+	}
+
+	private void ComboArchivingOrder_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+	{
+		if (ComboArchivingOrder == null)
+			return;
+		StackPanelCompressorSelection.IsVisible = ComboArchivingOrder.SelectedIndex == 1;
+		usedMethodsZ = (UsedMethodsZ)(((int)usedMethodsZ & ~3) | ComboArchivingOrder.SelectedIndex);
+		SendUsedMethods();
+	}
+
+	private void ComboOtherArchives_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+	{
+		if (ComboOtherArchives == null)
+			return;
+		usedMethodsZ = (UsedMethodsZ)(((int)usedMethodsZ & ~(3 << 2)) | ComboOtherArchives.SelectedIndex << 2);
+		SendUsedMethods();
+	}
+
+	private void ApplyingCompressorsChanged(object? sender, RoutedEventArgs e)
+	{
+		if (CheckBoxApplyF == null || CheckBoxApplyI == null || CheckBoxApplyT == null || CheckBoxApplyA == null || CheckBoxApplyV == null)
+			return;
+		if (sender == CheckBoxApplyF)
+			usedMethodsZ ^= UsedMethodsZ.ApplyF;
+		if (sender == CheckBoxApplyI)
+			usedMethodsZ ^= UsedMethodsZ.ApplyI;
+		if (sender == CheckBoxApplyT)
+			usedMethodsZ ^= UsedMethodsZ.ApplyT;
+		if (sender == CheckBoxApplyA)
+			usedMethodsZ |= UsedMethodsZ.ApplyA;
+		if (sender == CheckBoxApplyV)
+			usedMethodsZ &= UsedMethodsZ.ApplyV;
+		if (CheckBoxApplyF.IsChecked == false && CheckBoxApplyI.IsChecked == false && CheckBoxApplyT.IsChecked == false)
+			CheckBoxApplyF.IsChecked = true;
+		else
+			SendUsedMethods();
 	}
 
 	private void SendUsedMethods()
 	{
-		if (netStream.Length < 3)
+		if (netStream.Length < 4)
 			try
 			{
 				Dispatcher.UIThread.InvokeAsync(async () =>
@@ -994,9 +1108,10 @@ public partial class MainView : UserControl
 			catch
 			{
 			}
-		SendMessageToClient(0, [0, .. BitConverter.GetBytes((int)usedMethodsF)]);
-		SendMessageToClient(1, [0, .. BitConverter.GetBytes((int)usedMethodsI)]);
-		SendMessageToClient(2, [0, .. BitConverter.GetBytes((int)usedMethodsT)]);
+		SendMessageToClient(ClientIndex.Files, [0, .. BitConverter.GetBytes((int)usedMethodsF)]);
+		SendMessageToClient(ClientIndex.Images, [0, .. BitConverter.GetBytes((int)usedMethodsI)]);
+		SendMessageToClient(ClientIndex.Text, [0, .. BitConverter.GetBytes((int)usedMethodsT)]);
+		SendMessageToClient(ClientIndex.Zipping, [0, .. BitConverter.GetBytes((int)usedMethodsZ)]);
 	}
 
 	private void SendUsedSizes()
@@ -1011,8 +1126,8 @@ public partial class MainView : UserControl
 			catch
 			{
 			}
-		SendMessageToClient(0, [1, .. BitConverter.GetBytes(usedSizesF)]);
-		SendMessageToClient(2, [1, .. BitConverter.GetBytes(usedSizesT)]);
+		SendMessageToClient(ClientIndex.Files, [1, .. BitConverter.GetBytes(usedSizesF)]);
+		SendMessageToClient(ClientIndex.Text, [1, .. BitConverter.GetBytes(usedSizesT)]);
 	}
 
 	private readonly Grid[] ThreadsLayout;

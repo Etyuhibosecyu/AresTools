@@ -460,6 +460,7 @@ $RECYCLE.BIN/
 /AresT.iss
 /Files
 *.exe
+*.dll
 *.bat
 *.keystore
 ffmpeg

@@ -8,7 +8,8 @@ public class Executor
 	{
 		Task[] tasks = [Task.Factory.StartNew(() => AresFLib.MainClassF.Main(args)),
 			Task.Factory.StartNew(() => AresILib.MainClassI.Main(args)),
-			Task.Factory.StartNew(() => AresTLib.MainClassT.Main(args))];
+			Task.Factory.StartNew(() => AresTLib.MainClassT.Main(args)),
+			Task.Factory.StartNew(() => AresZLib.MainClassZ.Main(args))];
 		Task.WaitAll(tasks);
 	}
 }

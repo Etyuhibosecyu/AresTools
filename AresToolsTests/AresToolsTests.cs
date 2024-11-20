@@ -30,8 +30,8 @@ public partial class DecompressionTests
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		PresentMethodsF = UsedMethodsF.CS2 | UsedMethodsF.HF2;
 		PresentMethodsI = UsedMethodsI.CS1 | UsedMethodsI.HF1;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var file in files)
 		{
 			MainClassF.MainThread(file, temp, MainClassF.Compress, false);
@@ -52,8 +52,8 @@ public partial class DecompressionTests
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		PresentMethodsF = UsedMethodsF.CS2 | UsedMethodsF.LZ2;
 		PresentMethodsI = UsedMethodsI.CS1 | UsedMethodsI.LZ1;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var file in files)
 		{
 			MainClassF.MainThread(file, temp, MainClassF.Compress, false);
@@ -74,8 +74,8 @@ public partial class DecompressionTests
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		PresentMethodsF = UsedMethodsF.CS2 | UsedMethodsF.LZ2 | UsedMethodsF.HF2;
 		PresentMethodsI = UsedMethodsI.CS1 | UsedMethodsI.HF1 | UsedMethodsI.LZ1;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var file in files)
 		{
 			MainClassF.MainThread(file, temp, MainClassF.Compress, false);
@@ -94,8 +94,8 @@ public partial class DecompressionTests
 	public void TestHF_Delta()
 	{
 		PresentMethodsI = UsedMethodsI.CS2 | UsedMethodsI.HF2;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var image in images)
 		{
 			MainClassI.MainThread(image, temp, MainClassI.Compress, false);
@@ -109,8 +109,8 @@ public partial class DecompressionTests
 	public void TestLZ_Delta()
 	{
 		PresentMethodsI = UsedMethodsI.CS2 | UsedMethodsI.LZ2;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var image in images)
 		{
 			MainClassI.MainThread(image, temp, MainClassI.Compress, false);
@@ -124,8 +124,8 @@ public partial class DecompressionTests
 	public void TestHF_LZ_Delta()
 	{
 		PresentMethodsI = UsedMethodsI.CS2 | UsedMethodsI.HF2 | UsedMethodsI.LZ2;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var image in images)
 		{
 			MainClassI.MainThread(image, temp, MainClassI.Compress, false);
@@ -139,8 +139,8 @@ public partial class DecompressionTests
 	public void TestAHF()
 	{
 		PresentMethodsI = UsedMethodsI.CS1 | UsedMethodsI.HF1 | UsedMethodsI.AHF;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var image in images)
 		{
 			MainClassI.MainThread(image, temp, MainClassI.Compress, false);
@@ -154,8 +154,8 @@ public partial class DecompressionTests
 	public void TestAHF_LZ()
 	{
 		PresentMethodsI = UsedMethodsI.CS1 | UsedMethodsI.HF1 | UsedMethodsI.LZ1 | UsedMethodsI.AHF;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var image in images)
 		{
 			MainClassI.MainThread(image, temp, MainClassI.Compress, false);
@@ -169,8 +169,8 @@ public partial class DecompressionTests
 	public void TestAHF_Delta()
 	{
 		PresentMethodsI = UsedMethodsI.CS2 | UsedMethodsI.HF2 | UsedMethodsI.AHF;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var image in images)
 		{
 			MainClassI.MainThread(image, temp, MainClassI.Compress, false);
@@ -184,8 +184,8 @@ public partial class DecompressionTests
 	public void TestAHF_LZ_Delta()
 	{
 		PresentMethodsI = UsedMethodsI.CS2 | UsedMethodsI.HF2 | UsedMethodsI.LZ2 | UsedMethodsI.AHF;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var image in images)
 		{
 			MainClassI.MainThread(image, temp, MainClassI.Compress, false);
@@ -200,8 +200,8 @@ public partial class DecompressionTests
 	{
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		PresentMethodsT = UsedMethodsT.CS1;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var file in files)
 		{
 			try
@@ -222,8 +222,8 @@ public partial class DecompressionTests
 	{
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		PresentMethodsT = UsedMethodsT.CS1 | UsedMethodsT.LZ1;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var file in files)
 		{
 			try
@@ -244,8 +244,8 @@ public partial class DecompressionTests
 	{
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		PresentMethodsT = UsedMethodsT.CS1 | UsedMethodsT.COMB1;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var file in files)
 		{
 			try
@@ -266,8 +266,8 @@ public partial class DecompressionTests
 	{
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		PresentMethodsT = UsedMethodsT.CS1 | UsedMethodsT.LZ1 | UsedMethodsT.COMB1;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var file in files)
 		{
 			try
@@ -287,9 +287,9 @@ public partial class DecompressionTests
 	public void TestHF_BWT()
 	{
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-		PresentMethodsF = UsedMethodsF.CS2;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		PresentMethodsF = UsedMethodsF.CS1;
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var file in files)
 		{
 			MainClassF.MainThread(file, temp, MainClassF.Compress, false);
@@ -304,8 +304,8 @@ public partial class DecompressionTests
 	{
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		PresentMethodsF = UsedMethodsF.CS1 | UsedMethodsF.AHF1;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var file in files)
 		{
 			MainClassF.MainThread(file, temp, MainClassF.Compress, false);
@@ -320,8 +320,8 @@ public partial class DecompressionTests
 	{
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		PresentMethodsT = UsedMethodsT.CS2;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var file in files)
 		{
 			try
@@ -342,8 +342,8 @@ public partial class DecompressionTests
 	{
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		PresentMethodsT = UsedMethodsT.CS2 | UsedMethodsT.COMB2;
-		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-compressed.tmp";
-		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + @"\Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
 		foreach (var file in files)
 		{
 			try

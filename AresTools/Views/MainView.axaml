@@ -7,7 +7,8 @@
 						 xmlns:vm="clr-namespace:AresTools.ViewModels"
 						 mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="768"
 						 x:Class="AresTools.Views.MainView"
-						 x:DataType="vm:MainViewModel">
+						 x:DataType="vm:MainViewModel"
+						 Loaded="UserControl_Loaded">
 	<Design.DataContext>
 		<!-- This only sets the DataContext for the previewer in an IDE,
 				 to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
@@ -195,7 +196,8 @@
 							</ComboBox>
 						</Grid>
 
-						<Grid>
+						<Grid
+							IsEnabled="{Binding IsEnabled, ElementName=GridSettingsF}">
 							<Grid.RowDefinitions>
 								<RowDefinition Height="Auto" />
 								<RowDefinition Height="Auto" />
@@ -316,6 +318,7 @@
 							</StackPanel>
 						</Grid>
 						<StackPanel
+							IsEnabled="{Binding IsEnabled, ElementName=GridSettingsF}"
 							Orientation="Horizontal">
 							<TextBlock
 								Text="Размер фрагмента (млн.): " />
@@ -354,6 +357,23 @@
 									<x:String>16 млн.</x:String>
 								</ComboBox.Items>
 								<ComboBox.SelectedIndex>4</ComboBox.SelectedIndex>
+							</ComboBox>
+							<TextBlock
+								Text="Размер словаря LZ: " />
+							<ComboBox
+								x:Name="ComboLZDictionaryF"
+								SelectionChanged="ComboLZDictionaryF_SelectionChanged">
+								<ComboBox.Items>
+									<x:String>32 КБ</x:String>
+									<x:String>256 КБ</x:String>
+									<x:String>1 МБ</x:String>
+									<x:String>4 МБ</x:String>
+									<x:String>16 МБ</x:String>
+									<x:String>64 МБ</x:String>
+									<x:String>256 МБ</x:String>
+									<x:String>Весь фрагмент</x:String>
+								</ComboBox.Items>
+								<ComboBox.SelectedIndex>0</ComboBox.SelectedIndex>
 							</ComboBox>
 						</StackPanel>
 					</StackPanel>
@@ -434,7 +454,7 @@
 						</Grid>
 
 						<Grid
-							x:Name="GridSettings">
+							x:Name="GridSettingsI">
 							<Grid.RowDefinitions>
 								<RowDefinition Height="Auto" />
 							</Grid.RowDefinitions>
@@ -461,7 +481,8 @@
 							</ComboBox>
 						</Grid>
 
-						<Grid>
+						<Grid
+							IsEnabled="{Binding IsEnabled, ElementName=GridSettingsI}">
 							<Grid.RowDefinitions>
 								<RowDefinition Height="Auto" />
 								<RowDefinition Height="Auto" />
@@ -775,7 +796,8 @@
 							</ComboBox>
 						</Grid>
 
-						<Grid>
+						<Grid
+							IsEnabled="{Binding IsEnabled, ElementName=GridSettingsT}">
 							<Grid.RowDefinitions>
 								<RowDefinition Height="Auto" />
 								<RowDefinition Height="Auto" />
@@ -867,6 +889,7 @@
 							</StackPanel>
 						</Grid>
 						<StackPanel
+							IsEnabled="{Binding IsEnabled, ElementName=GridSettingsT}"
 							Orientation="Horizontal">
 							<TextBlock
 								Text="Размер фрагмента (млн.): " />
@@ -893,10 +916,155 @@
 					</StackPanel>
 				</TabItem>
 				<TabItem x:Name="TabItemArchiving" Header="Архивация">
-					<Image
-						HorizontalAlignment="Left"
-						Source="avares://AresTools/Assets/under_development.png"
-						Width="256" />
+					<StackPanel
+						Orientation="Vertical">
+						<Grid
+							x:Name="GridArchivingButtons">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+							<Button
+								x:Name="ButtonOpenArchive"
+								Background="#40BF40"
+								Click="ButtonOpenArchive_Click"
+								Grid.Row="0"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Открыть архив"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonCreateArchive"
+								Background="#8080BF"
+								Click="ButtonCreateArchive_Click"
+								Grid.Row="1"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Создать архив"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonUnpackArchive"
+								Background="#BF8040"
+								Click="ButtonUnpackArchive_Click"
+								Grid.Row="2"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Распаковать архив"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonRepackArchive"
+								Background="#A06040"
+								Click="ButtonRepackArchive_Click"
+								Grid.Column="1"
+								Grid.Row="1"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Перепаковать архив"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+							<Button
+								x:Name="ButtonStopArchiving"
+								Background="#BF4080"
+								Click="ButtonStop_Click"
+								Grid.Column="2"
+								Grid.Row="2"
+								HorizontalAlignment="Stretch">
+								<TextBlock
+									Text="Остановить"
+									TextAlignment="Center"
+									FontSize="12" />
+							</Button>
+						</Grid>
+
+						<StackPanel
+							x:Name="StackPanelArchiving"
+							Orientation="Vertical">
+							<TextBlock
+								Text="Ares Z является архиватором, но не компрессором!&#x0a;Он использует для сжатия другие компрессоры, параметры которых представлены на их вкладках." />
+							<StackPanel
+								Orientation="Horizontal">
+								<TextBlock
+									Text="Порядок архивации: " />
+								<ComboBox
+									x:Name="ComboArchivingOrder"
+									SelectionChanged="ComboArchivingOrder_SelectionChanged">
+									<ComboBox.Items>
+										<x:String>Только архивировать (без сжатия)</x:String>
+										<x:String>Сжать, затем архивировать (не устраняет кросс-файловую избыточность)</x:String>
+										<x:String>Архивировать, затем сжать (специфические компрессоры не работают)</x:String>
+										<x:String>Адаптивно (в разработке)</x:String>
+									</ComboBox.Items>
+									<ComboBox.SelectedIndex>1</ComboBox.SelectedIndex>
+								</ComboBox>
+							</StackPanel>
+							<StackPanel
+								Orientation="Horizontal">
+								<TextBlock
+									Text="Что делать с архивами: " />
+								<ComboBox
+									x:Name="ComboOtherArchives"
+									SelectionChanged="ComboOtherArchives_SelectionChanged">
+									<ComboBox.Items>
+										<x:String>Проигнорировать (упадет степень сжатия)</x:String>
+										<x:String>Подменить архивами Ares Z (если архивировать программу, она может перестать работать)</x:String>
+										<x:String>Разобрать на файлы, а при деархивации собрать обратно (поддерживает мало форматов)</x:String>
+									</ComboBox.Items>
+									<ComboBox.SelectedIndex>0</ComboBox.SelectedIndex>
+								</ComboBox>
+							</StackPanel>
+							<StackPanel
+								x:Name="StackPanelCompressorSelection"
+								Orientation="Horizontal">
+								<TextBlock
+									Text="Какие компрессоры применять: " />
+								<CheckBox
+									x:Name="CheckBoxApplyF"
+									IsChecked="True"
+									IsCheckedChanged="ApplyingCompressorsChanged">
+									<TextBlock
+										Text="F" />
+								</CheckBox>
+								<CheckBox
+									x:Name="CheckBoxApplyI"
+									IsChecked="True"
+									IsCheckedChanged="ApplyingCompressorsChanged">
+									<TextBlock
+										Text="I" />
+								</CheckBox>
+								<CheckBox
+									x:Name="CheckBoxApplyT"
+									IsCheckedChanged="ApplyingCompressorsChanged">
+									<TextBlock
+										Text="T" />
+								</CheckBox>
+								<CheckBox
+									x:Name="CheckBoxApplyA"
+									IsCheckedChanged="ApplyingCompressorsChanged">
+									<TextBlock
+										Text="A (в разработке)" />
+								</CheckBox>
+								<CheckBox
+									x:Name="CheckBoxApplyV"
+									IsCheckedChanged="ApplyingCompressorsChanged">
+									<TextBlock
+										Text="V (в разработке)" />
+								</CheckBox>
+							</StackPanel>
+						</StackPanel>
+					</StackPanel>
 				</TabItem>
 			</TabControl>
 		</StackPanel>

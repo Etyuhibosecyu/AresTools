@@ -46,6 +46,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решен
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresALib", "..\AresA\AresALib\AresALib.csproj", "{BD848D87-9966-4BE9-AEF3-7EAF6245BB9C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresZLib", "..\AresZ\AresZLib\AresZLib.csproj", "{697A27BD-43F3-4EBB-A836-D92367FF7C7D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresZDecoding", "..\AresZ\AresZDecoding\AresZDecoding.csproj", "{45FB818E-BD13-4035-9AD5-8047D419DEE3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +134,14 @@ Global
 		{BD848D87-9966-4BE9-AEF3-7EAF6245BB9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD848D87-9966-4BE9-AEF3-7EAF6245BB9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD848D87-9966-4BE9-AEF3-7EAF6245BB9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{697A27BD-43F3-4EBB-A836-D92367FF7C7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{697A27BD-43F3-4EBB-A836-D92367FF7C7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{697A27BD-43F3-4EBB-A836-D92367FF7C7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{697A27BD-43F3-4EBB-A836-D92367FF7C7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45FB818E-BD13-4035-9AD5-8047D419DEE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45FB818E-BD13-4035-9AD5-8047D419DEE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45FB818E-BD13-4035-9AD5-8047D419DEE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45FB818E-BD13-4035-9AD5-8047D419DEE3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

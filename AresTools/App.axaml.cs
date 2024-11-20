@@ -1,6 +1,7 @@
 ﻿global using AresFLib;
 global using AresILib;
 global using AresTLib;
+global using AresZLib;
 global using Corlib.NStar;
 global using System;
 global using System.IO;
@@ -8,6 +9,7 @@ global using System.Net.Http;
 global using System.Threading;
 global using System.Threading.Tasks;
 global using G = System.Collections.Generic;
+global using static Corlib.NStar.Extents;
 global using static System.Math;
 global using static UnsafeFunctions.Global;
 using AresTools.ViewModels;
