@@ -44,7 +44,7 @@ public partial class MainView : UserControl
 	private static UsedMethodsF usedMethodsF = UsedMethodsF.CS1 | UsedMethodsF.AHF1;
 	private static UsedMethodsI usedMethodsI = UsedMethodsI.CS2 | UsedMethodsI.LZ2 | UsedMethodsI.HF2 | UsedMethodsI.AHF;
 	private static UsedMethodsT usedMethodsT = UsedMethodsT.CS1 | UsedMethodsT.LZ1;
-	private static UsedMethodsZ usedMethodsZ = UsedMethodsZ.ArchiveThenCompress | UsedMethodsZ.ApplyF | UsedMethodsZ.ApplyI;
+	private static UsedMethodsZ usedMethodsZ = UsedMethodsZ.CompressThenArchive | UsedMethodsZ.ApplyF | UsedMethodsZ.ApplyI;
 	private static int usedSizesF = 68, usedSizesT = 4;
 #if !DEBUG
 	private DateTime compressionStart;
@@ -66,13 +66,13 @@ public partial class MainView : UserControl
 	public MainView()
 	{
 		ThreadsLayout = new Grid[ProgressBarGroups];
-		TextBlockSubtotal = new TextBlock[ProgressBarGroups];
+		TextBlockMethods = new TextBlock[ProgressBarGroups];
 		TextBlockCurrent = new TextBlock[ProgressBarGroups];
 		TextBlockStatus = new TextBlock[ProgressBarGroups];
-		ContentViewSubtotal = new ContentControl[ProgressBarGroups];
+		ContentViewMethods = new ContentControl[ProgressBarGroups];
 		ContentViewCurrent = new ContentControl[ProgressBarGroups];
 		ContentViewStatus = new ContentControl[ProgressBarGroups];
-		ProgressBarSubtotal = new ProgressBar[ProgressBarGroups];
+		ProgressBarMethods = new ProgressBar[ProgressBarGroups];
 		ProgressBarCurrent = new ProgressBar[ProgressBarGroups];
 		ProgressBarStatus = new ProgressBar[ProgressBarGroups];
 		tcpListener = default!;
@@ -95,26 +95,26 @@ public partial class MainView : UserControl
 			Grid.SetRow(ThreadsLayout[i], i % ProgressBarVGroups);
 			ThreadsLayout[i].ColumnDefinitions = [new(GridLength.Auto), new(GridLength.Auto)];
 			ThreadsLayout[i].RowDefinitions = [new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Auto)];
-			TextBlockSubtotal[i] = new();
-			ThreadsLayout[i].Children.Add(TextBlockSubtotal[i]);
-			Grid.SetColumn(TextBlockSubtotal[i], 0);
-			Grid.SetRow(TextBlockSubtotal[i], 0);
-			TextBlockSubtotal[i].FontSize = 12;
-			TextBlockSubtotal[i].Foreground = new SolidColorBrush(new Color(255, 0, 0, 0));
-			TextBlockSubtotal[i].Text = "Subtotal" + (i + 1).ToString();
-			ContentViewSubtotal[i] = new();
-			ThreadsLayout[i].Children.Add(ContentViewSubtotal[i]);
-			Grid.SetColumn(ContentViewSubtotal[i], 1);
-			Grid.SetRow(ContentViewSubtotal[i], 0);
-			ContentViewSubtotal[i].MinHeight = 16;
-			ProgressBarSubtotal[i] = new();
-			ContentViewSubtotal[i].Content = ProgressBarSubtotal[i];
-			ProgressBarSubtotal[i].Background = new SolidColorBrush(new Color(255, 255, 191, 223));
-			ProgressBarSubtotal[i].Maximum = 1;
-			ProgressBarSubtotal[i].MinHeight = 16;
-			ProgressBarSubtotal[i].MinWidth = 180;
-			ProgressBarSubtotal[i].Value = 0.25;
-			ProgressBarSubtotal[i].Foreground = new SolidColorBrush(new Color(255, 191, 128, 128));
+			TextBlockMethods[i] = new();
+			ThreadsLayout[i].Children.Add(TextBlockMethods[i]);
+			Grid.SetColumn(TextBlockMethods[i], 0);
+			Grid.SetRow(TextBlockMethods[i], 0);
+			TextBlockMethods[i].FontSize = 12;
+			TextBlockMethods[i].Foreground = new SolidColorBrush(new Color(255, 0, 0, 0));
+			TextBlockMethods[i].Text = "Methods" + (i + 1).ToString();
+			ContentViewMethods[i] = new();
+			ThreadsLayout[i].Children.Add(ContentViewMethods[i]);
+			Grid.SetColumn(ContentViewMethods[i], 1);
+			Grid.SetRow(ContentViewMethods[i], 0);
+			ContentViewMethods[i].MinHeight = 16;
+			ProgressBarMethods[i] = new();
+			ContentViewMethods[i].Content = ProgressBarMethods[i];
+			ProgressBarMethods[i].Background = new SolidColorBrush(new Color(255, 255, 191, 223));
+			ProgressBarMethods[i].Maximum = 1;
+			ProgressBarMethods[i].MinHeight = 16;
+			ProgressBarMethods[i].MinWidth = 180;
+			ProgressBarMethods[i].Value = 0.25;
+			ProgressBarMethods[i].Foreground = new SolidColorBrush(new Color(255, 191, 128, 128));
 			TextBlockCurrent[i] = new();
 			ThreadsLayout[i].Children.Add(TextBlockCurrent[i]);
 			Grid.SetColumn(TextBlockCurrent[i], 0);
@@ -161,14 +161,13 @@ public partial class MainView : UserControl
 		port = random.Next(1024, 65536);
 		StartExecutor();
 #endif
+		//var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
+		//var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
+		//MainClassV.MainThread(@"D:\User\Pictures\01-05-2024 155324.mp4", temp, MainClassV.Compress, false);
 	}
 
 	private void UserControl_Loaded(object? sender, RoutedEventArgs e)
 	{
-		//var temp = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-compressed.tmp";
-		//var temp2 = (Environment.GetEnvironmentVariable("temp") ?? throw new IOException()) + "/Ares-" + Environment.ProcessId + "-unpacked.tmp";
-		//MainClassV.MainThread(@"D:\User\Pictures\01-05-2024 155324.mp4", temp, MainClassV.Compress, false);
-		//TabView.CurrentItem = TabItemText;
 		ComboQuickSetupF.SelectedIndex = 1;
 		filename = args.Length == 0 ? "" : args[0];
 		System.Threading.Thread.CurrentThread.Priority = ThreadPriority.Normal;
@@ -294,8 +293,11 @@ public partial class MainView : UserControl
 		{
 			if (message.Length == 0)
 				return;
-			if (message[0] == 0 && message.Length == ProgressBarGroups * 24 + 17 && isWorking)
+			if (message[0] == 0 && isWorking)
+			{
+				Debug.Assert(message.Length == ProgressBarGroups * 24 + 25);
 				UpdateProgressBars(message);
+			}
 			else if (message[0] == 1 && client == ClientIndex.Images && message.Length == 2)
 				await OpenFile(client, message[1]);
 			else if (message[0] == 1 && client != ClientIndex.Images && message.Length == 1)
@@ -321,13 +323,14 @@ public partial class MainView : UserControl
 
 	private void UpdateProgressBars(byte[] message)
 	{
-		SetValue(ProgressBarSupertotal, (double)BitConverter.ToInt32(message.AsSpan(1, 4)) / BitConverter.ToInt32(message.AsSpan(5, 4)));
-		SetValue(ProgressBarTotal, (double)BitConverter.ToInt32(message.AsSpan(9, 4)) / BitConverter.ToInt32(message.AsSpan(13, 4)));
+		SetValue(ProgressBarFiles, (double)BitConverter.ToInt32(message.AsSpan(1, 4)) / BitConverter.ToInt32(message.AsSpan(5, 4)));
+		SetValue(ProgressBarFragments, (double)BitConverter.ToInt32(message.AsSpan(9, 4)) / BitConverter.ToInt32(message.AsSpan(13, 4)));
+		SetValue(ProgressBarBranches, (double)BitConverter.ToInt32(message.AsSpan(17, 4)) / BitConverter.ToInt32(message.AsSpan(21, 4)));
 		for (var i = 0; i < ProgressBarGroups; i++)
 		{
-			SetValue(ProgressBarSubtotal[i], (double)BitConverter.ToInt32(message.AsSpan(i * 24 + 17, 4)) / BitConverter.ToInt32(message.AsSpan(i * 24 + 21, 4)));
-			SetValue(ProgressBarCurrent[i], (double)BitConverter.ToInt32(message.AsSpan(i * 24 + 25, 4)) / BitConverter.ToInt32(message.AsSpan(i * 24 + 29, 4)));
-			SetValue(ProgressBarStatus[i], (double)BitConverter.ToInt32(message.AsSpan(i * 24 + 33, 4)) / BitConverter.ToInt32(message.AsSpan(i * 24 + 37, 4)));
+			SetValue(ProgressBarMethods[i], (double)BitConverter.ToInt32(message.AsSpan(i * 24 + 25, 4)) / BitConverter.ToInt32(message.AsSpan(i * 24 + 29, 4)));
+			SetValue(ProgressBarCurrent[i], (double)BitConverter.ToInt32(message.AsSpan(i * 24 + 33, 4)) / BitConverter.ToInt32(message.AsSpan(i * 24 + 37, 4)));
+			SetValue(ProgressBarStatus[i], (double)BitConverter.ToInt32(message.AsSpan(i * 24 + 41, 4)) / BitConverter.ToInt32(message.AsSpan(i * 24 + 45, 4)));
 		}
 	}
 
@@ -403,12 +406,6 @@ public partial class MainView : UserControl
 				multiSelect = true;
 			if (ProcessStartup(client == ClientIndex.Images ? "Images" : "").Result is bool || !await ValidateImageAsync(client))
 				break;
-			if (client == ClientIndex.Files && usedMethodsF.HasFlag(UsedMethodsF.CS4) && (usedSizesF & 0xF) > 4 && new FileInfo(filename).Length > 16000000)
-			{
-				await Dispatcher.UIThread.InvokeAsync(async () =>
-					await MessageBoxManager.GetMessageBoxStandard("", "Ошибка! Слишком большой размер фрагмента для PPM. Попробуйте уменьшить размер фрагмента, отключите PPM или возьмите меньший файл.", MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowAsPopupAsync(this));
-				break;
-			}
 			await StartProcess(client, false);
 			return;
 			case OperationType.Unpacking:
@@ -440,11 +437,12 @@ public partial class MainView : UserControl
 	private void InitProgressBars()
 	{
 		SetButtonsEnabled(false);
-		SetValue(ProgressBarSupertotal, 0);
-		SetValue(ProgressBarTotal, 0);
+		SetValue(ProgressBarFiles, 0);
+		SetValue(ProgressBarFragments, 0);
+		SetValue(ProgressBarBranches, 0);
 		for (var i = 0; i < ProgressBarGroups; i++)
 		{
-			SetValue(ProgressBarSubtotal[i], 0);
+			SetValue(ProgressBarMethods[i], 0);
 			SetValue(ProgressBarCurrent[i], 0);
 			SetValue(ProgressBarStatus[i], 0);
 		}
@@ -452,11 +450,12 @@ public partial class MainView : UserControl
 
 	private void SetProgressBarsFull()
 	{
-		SetValue(ProgressBarSupertotal, -1);
-		SetValue(ProgressBarTotal, -1);
+		SetValue(ProgressBarFiles, -1);
+		SetValue(ProgressBarFragments, -1);
+		SetValue(ProgressBarBranches, -1);
 		for (var i = 0; i < ProgressBarGroups; i++)
 		{
-			SetValue(ProgressBarSubtotal[i], -1);
+			SetValue(ProgressBarMethods[i], -1);
 			SetValue(ProgressBarCurrent[i], -1);
 			SetValue(ProgressBarStatus[i], -1);
 		}
@@ -619,11 +618,12 @@ public partial class MainView : UserControl
 	private void ButtonStop_Click(object? sender, RoutedEventArgs e)
 	{
 		executor?.Kill();
-		SetValue(ProgressBarSupertotal, -1);
-		SetValue(ProgressBarTotal, -1);
+		SetValue(ProgressBarFiles, -1);
+		SetValue(ProgressBarFragments, -1);
+		SetValue(ProgressBarBranches, -1);
 		for (var i = 0; i < ProgressBarGroups; i++)
 		{
-			SetValue(ProgressBarSubtotal[i], -1);
+			SetValue(ProgressBarMethods[i], -1);
 			SetValue(ProgressBarCurrent[i], -1);
 			SetValue(ProgressBarStatus[i], -1);
 		}
@@ -928,7 +928,7 @@ public partial class MainView : UserControl
 	{
 		if (RadioButtonAHFI == null)
 			return;
-		usedMethodsI ^= UsedMethodsI.AHF;
+		usedMethodsI = (usedMethodsI & ~UsedMethodsI.AHF) | (RadioButtonAHFI.IsChecked ?? false ? UsedMethodsI.AHF : 0);
 		SendUsedMethods();
 	}
 
@@ -1081,15 +1081,15 @@ public partial class MainView : UserControl
 		if (CheckBoxApplyF == null || CheckBoxApplyI == null || CheckBoxApplyT == null || CheckBoxApplyA == null || CheckBoxApplyV == null)
 			return;
 		if (sender == CheckBoxApplyF)
-			usedMethodsZ ^= UsedMethodsZ.ApplyF;
+			usedMethodsZ = CheckBoxApplyF.IsChecked ?? false ? usedMethodsZ | UsedMethodsZ.ApplyF : usedMethodsZ & ~UsedMethodsZ.ApplyF;
 		if (sender == CheckBoxApplyI)
-			usedMethodsZ ^= UsedMethodsZ.ApplyI;
+			usedMethodsZ = CheckBoxApplyI.IsChecked ?? false ? usedMethodsZ | UsedMethodsZ.ApplyI : usedMethodsZ & ~UsedMethodsZ.ApplyI;
 		if (sender == CheckBoxApplyT)
-			usedMethodsZ ^= UsedMethodsZ.ApplyT;
+			usedMethodsZ = CheckBoxApplyT.IsChecked ?? false ? usedMethodsZ | UsedMethodsZ.ApplyT : usedMethodsZ & ~UsedMethodsZ.ApplyT;
 		if (sender == CheckBoxApplyA)
-			usedMethodsZ |= UsedMethodsZ.ApplyA;
+			usedMethodsZ = CheckBoxApplyA.IsChecked ?? false ? usedMethodsZ | UsedMethodsZ.ApplyA : usedMethodsZ & ~UsedMethodsZ.ApplyA;
 		if (sender == CheckBoxApplyV)
-			usedMethodsZ &= UsedMethodsZ.ApplyV;
+			usedMethodsZ = CheckBoxApplyV.IsChecked ?? false ? usedMethodsZ | UsedMethodsZ.ApplyV : usedMethodsZ & ~UsedMethodsZ.ApplyV;
 		if (CheckBoxApplyF.IsChecked == false && CheckBoxApplyI.IsChecked == false && CheckBoxApplyT.IsChecked == false)
 			CheckBoxApplyF.IsChecked = true;
 		else
@@ -1131,13 +1131,13 @@ public partial class MainView : UserControl
 	}
 
 	private readonly Grid[] ThreadsLayout;
-	private readonly TextBlock[] TextBlockSubtotal;
+	private readonly TextBlock[] TextBlockMethods;
 	private readonly TextBlock[] TextBlockCurrent;
 	private readonly TextBlock[] TextBlockStatus;
-	private readonly ContentControl[] ContentViewSubtotal;
+	private readonly ContentControl[] ContentViewMethods;
 	private readonly ContentControl[] ContentViewCurrent;
 	private readonly ContentControl[] ContentViewStatus;
-	private readonly ProgressBar[] ProgressBarSubtotal;
+	private readonly ProgressBar[] ProgressBarMethods;
 	private readonly ProgressBar[] ProgressBarCurrent;
 	private readonly ProgressBar[] ProgressBarStatus;
 }

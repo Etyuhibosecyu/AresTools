@@ -32,39 +32,56 @@
 				<Grid.RowDefinitions>
 					<RowDefinition Height="40" />
 					<RowDefinition Height="40" />
+					<RowDefinition Height="40" />
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
 				<TextBlock
-					Text="Supertotal"
+					Text="Files"
 					FontSize="24" />
 				<ContentControl
 					Grid.Column="1"
 					MinHeight="40">
 					<ProgressBar
-						x:Name="ProgressBarSupertotal"
+						x:Name="ProgressBarFiles"
 						Background="#FFBFDF"
 						Maximum="1"
 						MinHeight="40"
-						Value="0.36"
+						Value="0.25"
 						Foreground="#BF8080" />
 				</ContentControl>
 				<TextBlock
 					Grid.Row="1"
-					Text="Total"
+					Text="Fragments"
 					FontSize="24" />
 				<ContentControl
 					Grid.Column="1"
 					Grid.Row="1"
 					MinHeight="40">
 					<ProgressBar
-						x:Name="ProgressBarTotal"
+						x:Name="ProgressBarFragments"
+						Background="#80FFBF"
+						Maximum="1"
+						MinHeight="40"
+						Value="0.5"
+						Foreground="#408040" />
+				</ContentControl>
+				<TextBlock
+					Grid.Row="2"
+					Text="Branches"
+					FontSize="24" />
+				<ContentControl
+					Grid.Column="1"
+					Grid.Row="2"
+					MinHeight="40">
+					<ProgressBar
+						x:Name="ProgressBarBranches"
 						Background="#BFBFFF"
 						Maximum="1"
 						MinHeight="40"
-						Value="0.64"
+						Value="0.75"
 						Foreground="#8080BF" />
 				</ContentControl>
 			</local:SpacedGrid>
@@ -682,7 +699,7 @@
 								</RadioButton>
 								<RadioButton
 									x:Name="RadioButtonAHFI"
-									Checked="RadioButtonAHFI_CheckedChanged"
+									IsCheckedChanged="RadioButtonAHFI_CheckedChanged"
 									ToolTip.Tip="Адаптивный Хаффман (AHF) - алгоритм энтропийного сжатия, похожий на Хаффман (HF), но способный динамически добавлять элементы в кодовую таблицу, начиная с первого, и учитывать их вероятность в текущем контексте, а не во всем файле. В результате этого сжатый текст (AB)¹⁰⁰⁰(CD)¹⁰⁰⁰(EF)¹⁰⁰⁰(GH)¹⁰⁰⁰ (показатель степени обозначает количество повторов) займет намного меньше, чем (8000 * log₂8) бит."
 									IsChecked="True"
 									GroupName="HuffmanTypeI">
